@@ -1,0 +1,20 @@
+pages:
+    stage: deploy
+    script:
+        - mv sw.js .sw.js
+        - echo "/*"  >  sw.js
+        #- md5sum *   >> sw.js
+        - find -type f ! -regex "\(\.\|.*/\..+\)" | cut -d'/' -f2- | (xargs -I% grep -o "%" .sw.js || true) | xargs md5sum >> sw.js
+        - echo "*/"  >> sw.js
+        - echo >> sw.js
+        - cat .sw.js >> sw.js
+        - rm .sw.js
+        - mkdir .public
+        - cp -r * .public
+        - mv .public public
+    artifacts:
+        paths:
+            - public
+    only:
+        - master
+
