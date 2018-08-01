@@ -9,8 +9,8 @@ This is a small project to learn and test my JavaScript skills with something re
 
 At this moment this project have support for two systems (and don't expect more):
 
- - Sony PlayStation
- - Sega Dreamcast
+ - Sony PlayStation: psxmc.js
+ - Sega Dreamcast: vmu.js
 
 This libraries work over raw memory card dumps. Normally emulators use this type of save, but if you  have a memory card dump with extra headers it won't work.
 
