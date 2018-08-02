@@ -1,14 +1,18 @@
 pages:
     stage: deploy
     script:
+        ## Add md5sums of cached files to sw.js
+        ## ServiceWorkers are updated based on file modification.
+        ## We will preprend md5sum of cached files, that will change the
+        ## service worker file every time that a cached file is updated
         - mv sw.js .sw.js
         - echo "/*"  >  sw.js
-        #- md5sum *   >> sw.js
         - find -type f ! -regex "\(\.\|.*/\..+\)" | cut -d'/' -f2- | (xargs -I% grep -o "%" .sw.js || true) | xargs md5sum >> sw.js
         - echo "*/"  >> sw.js
         - echo >> sw.js
         - cat .sw.js >> sw.js
         - rm .sw.js
+        ## Move files to public
         - mkdir .public
         - cp -r * .public
         - mv .public public
