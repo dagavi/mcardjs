@@ -18,13 +18,13 @@ self.addEventListener("install", function(event) {
                 currentFolder + "/",
                 currentFolder + "/index.html",
                 currentFolder + "/vmuviewer.html",
-                currentFolder + "/vmu.js",
-                currentFolder + "/vmuviewer.js",
+                currentFolder + "/js/vmu.js",
+                currentFolder + "/js/vmuviewer.js",
                 currentFolder + "/images/vmu_icon-192x192.png",
                 currentFolder + "/psxmcviewer.html",
-                currentFolder + "/psxmc.js",
-                currentFolder + "/psxmcviewer.js",
-                currentFolder + "/jistounicode.js",
+                currentFolder + "/js/psxmc.js",
+                currentFolder + "/js/psxmcviewer.js",
+                currentFolder + "/js/jistounicode.js",
                 currentFolder + "/images/psxmc_icon-192x192.png"
             ]);
         })
