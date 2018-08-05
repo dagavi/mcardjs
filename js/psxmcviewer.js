@@ -15,8 +15,6 @@ function WebController(container) {
     });
     new PSXMCViewerController(container);
 
-    this.registerServiceWorker();
-
     document.addEventListener("dragover", function(event) {
         // console.log("[WebController] dragover " + event.dataTransfer.types);
         if (event.dataTransfer.types.includes("Files")) {
@@ -42,25 +40,6 @@ function WebController(container) {
               //  }
             }
         }
-    });
-}
-
-WebController.prototype.registerServiceWorker = function() {
-    if (!navigator.serviceWorker) return;
-
-    const currentFolder = location.pathname.substring(0, location.pathname.lastIndexOf("/"));
-    const swFile = currentFolder + "/sw.js";
-
-    const controller = this;
-    navigator.serviceWorker.register(swFile).then(function(reg) {
-        console.log("ServiceWorker Registered");
-        let reloading = false;
-        navigator.serviceWorker.addEventListener("controllerchange", function(event) {
-            console.log("Controller Change!");
-            if (!reloading) window.location.reload();
-            reloading = true;
-        });
-
     });
 }
 
