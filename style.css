@@ -21,7 +21,14 @@
     max-width: 100%;
 }
 
-@media only screen and (max-width: 650px) {
+/*@media only screen and (max-width: 650px) {
+    #vmu .elements th:nth-child(n+2):nth-child(-n+4),
+    #vmu .elements td:nth-child(n+2):nth-child(-n+4) {
+        display: none;
+    }
+}*/
+
+@media only screen and (max-width: 500px) {
     #vmu .elements th:nth-child(n+2):nth-child(-n+4),
     #vmu .elements td:nth-child(n+2):nth-child(-n+4) {
         display: none;
