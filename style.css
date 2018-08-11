@@ -1,13 +1,19 @@
 
+
+.elements tr:first-child th {
+    background-color: #EAEAEA;
+    text-transform: uppercase;
+}
+
+
 .elements tr:hover {
-    background-color: #DCDCDC;
+    background-color: #EAEAFF;
 }
 
-.selected-row {
-    background-color: yellow;
+.elements tr.selected-row {
+    background-color: #EAFFEA;
 }
 
-.selected-row:hover {
-    background-color: yellow;
-    filter: brightness(100%);
-}
+/*.elements .selected-row:hover {
+    filter: brightness(200%);
+}*/
