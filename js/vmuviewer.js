@@ -226,7 +226,7 @@ VMUViewerController.prototype.displayDirectoryEntry = function(directory, table)
     newCell.appendChild(cellText);
 
     newCell = row.insertCell();
-    cellText = document.createTextNode(directory.getTimeStamp().toLocaleDateString("es-ES", { weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' , hour: '2-digit', minute: '2-digit', second: '2-digit'}));
+    cellText = document.createTextNode(directory.getTimeStamp().toLocaleString());
     newCell.appendChild(cellText);
 
     newCell = row.insertCell();
