@@ -216,6 +216,11 @@ VMUViewerController.prototype.displayDirectoryEntry = function(directory, table)
         VMUViewerController.prototype.transferObject = null;
     });
 
+    row.addEventListener("click", function(event) {
+        console.log("[Row click]");
+        event.currentTarget.classList.toggle("selected-row");
+    });
+
     let newCell = row.insertCell();
     let cellText = document.createTextNode(directory.getFileName());
     newCell.appendChild(cellText);
