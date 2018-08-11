@@ -1,5 +1,4 @@
 
-
 .elements tr:first-child th {
     background-color: #EAEAEA;
     text-transform: uppercase;
@@ -17,3 +16,7 @@
 /*.elements .selected-row:hover {
     filter: brightness(200%);
 }*/
+
+.memorycard {
+    max-width: 100%;
+}
