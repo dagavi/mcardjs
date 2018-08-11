@@ -260,7 +260,7 @@ PSXMCViewerController.prototype.displayDirectoryEntry = function(directory, tabl
     newCell.appendChild(canvas);
 
     newCell = row.insertCell();
-    cellText = document.createTextNode("Delete");
+    cellText = document.createTextNode("✖");
     newCell.addEventListener("click", function(event) {
         console.log("Delete");
         directory.mcard.deleteDirectoryEntry(directory);
