@@ -216,47 +216,26 @@ VMUViewerController.prototype.displayDirectoryEntry = function(directory, table)
         VMUViewerController.prototype.transferObject = null;
     });
 
-    // Name
     let newCell = row.insertCell();
     let cellText = document.createTextNode(directory.getFileName());
     newCell.appendChild(cellText);
 
-    // Timestamp
     newCell = row.insertCell();
     cellText = document.createTextNode(directory.getTimeStamp().toLocaleDateString("es-ES", { weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' , hour: '2-digit', minute: '2-digit', second: '2-digit'}));
     newCell.appendChild(cellText);
 
-    // Size
     newCell = row.insertCell();
-    cellText = document.createTextNode(directory.size[0] + "/" + this.mcard.verifyFATChain(directory.firstBlock[0]));
+    cellText = document.createTextNode(directory.size[0]);
     newCell.appendChild(cellText);
 
-    // First block + offset
-    newCell = row.insertCell();
-    cellText = document.createTextNode(directory.firstBlock[0] + "+" + directory.headerOffset[0]);
-    newCell.appendChild(cellText);
-
-    /* Read content */
     const contentHeader = directory.getContent();
 
-     // VM Desc
     newCell = row.insertCell();
     cellText = document.createTextNode(contentHeader.getVMSDescription());
     newCell.appendChild(cellText);
 
-    // Boot Desc
     newCell = row.insertCell();
     cellText = document.createTextNode(contentHeader.getBootDescription());
-    newCell.appendChild(cellText);
-
-    // Num Icons
-    newCell = row.insertCell();
-    cellText = document.createTextNode(contentHeader.numIcons[0]);
-    newCell.appendChild(cellText);
-
-    // Eyecatch Type
-    newCell = row.insertCell();
-    cellText = document.createTextNode(contentHeader.animationSpeed[0]);
     newCell.appendChild(cellText);
 
     newCell = row.insertCell();

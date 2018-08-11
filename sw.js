@@ -17,6 +17,7 @@ self.addEventListener("install", function(event) {
             return cache.addAll([
                 currentFolder + "/",
                 currentFolder + "/index.html",
+                currentFolder + "/style.css",
                 currentFolder + "/vmuviewer.html",
                 currentFolder + "/js/vmu.js",
                 currentFolder + "/js/vmuviewer.js",

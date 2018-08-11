@@ -1,0 +1,13 @@
+
+.elements tr:hover {
+    background-color: #DCDCDC;
+}
+
+.selected-row {
+    background-color: yellow;
+}
+
+.selected-row:hover {
+    background-color: yellow;
+    filter: brightness(100%);
+}

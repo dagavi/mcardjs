@@ -219,7 +219,6 @@ PSXMCViewerController.prototype.displayDirectoryEntry = function(directory, tabl
 
     let fileHeader = directory.getFileHeader();
 
-    // Name
     let newCell = row.insertCell();
     let cellText = document.createTextNode(directory.getRegion());
     newCell.appendChild(cellText);
@@ -236,44 +235,8 @@ PSXMCViewerController.prototype.displayDirectoryEntry = function(directory, tabl
     cellText = document.createTextNode(fileHeader.getTitle());
     newCell.appendChild(cellText);
 
-    // Size
     newCell = row.insertCell();
     cellText = document.createTextNode(directory.size[0]);
-    newCell.appendChild(cellText);
-
-    newCell = row.insertCell();
-    cellText = document.createTextNode(directory.getFrameNumber());
-    newCell.appendChild(cellText);
-
-
-    newCell = row.insertCell();
-    cellText = document.createTextNode(directory.isFirstBlock());
-    newCell.appendChild(cellText);
-
-
-    newCell = row.insertCell();
-    cellText = document.createTextNode(directory.isMidBlock());
-    newCell.appendChild(cellText);
-
-
-    newCell = row.insertCell();
-    cellText = document.createTextNode(directory.isLastBlock());
-    newCell.appendChild(cellText);
-
-    newCell = row.insertCell();
-    cellText = document.createTextNode(directory.nextBlock[0]);
-    newCell.appendChild(cellText);
-
-    newCell = row.insertCell();
-    cellText = document.createTextNode(directory.nextBlockEnd());
-    newCell.appendChild(cellText);
-
-    newCell = row.insertCell();
-    cellText = document.createTextNode(fileHeader.iconFlag[0]);
-    newCell.appendChild(cellText);
-
-    newCell = row.insertCell();
-    cellText = document.createTextNode(fileHeader.numIcons[0]);
     newCell.appendChild(cellText);
 
     newCell = row.insertCell();
