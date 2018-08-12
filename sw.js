@@ -26,7 +26,12 @@ self.addEventListener("install", function(event) {
                 currentFolder + "/js/psxmc.js",
                 currentFolder + "/js/psxmcviewer.js",
                 currentFolder + "/js/jistounicode.js",
-                currentFolder + "/images/psxmc_icon-192x192.png"
+                currentFolder + "/images/psxmc_icon-192x192.png",
+
+                currentFolder + "/vmuviewer-mat.html",
+                currentFolder + "/js/vmuviewer-mat.js",
+                "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css",
+                "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"
             ]);
         })
     );

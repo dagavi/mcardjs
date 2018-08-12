@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>VMU Viewer</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Web as app support -->
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- Original icon from: https://dribbble.com/shots/3385687-Dreamcast-VMU-Icon-Revision -->
+    <link rel="icon" sizes="192x192" href="images/vmu_icon-192x192.png">
+
+    <!-- Navigation bar color -->
+    <!-- Chrome, Firefox OS and Opera -->
+    <meta name="theme-color" content="#447AC4">
+    <!-- Windows Phone -->
+    <meta name="msapplication-navbutton-color" content="#447AC4">
+    <!-- iOS Safari -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="#447AC4">
+
+    <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
+
+    <!-- Materialize library -->
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
+
+    <script src="js/sw-register.js"></script>
+    <script src="js/vmu.js"></script>
+    <script src="js/vmuviewer-mat.js"></script>
+</head>
+<body>
+    <header>VMU Viewer</header>
+
+    <main>
+        <!-- Floating button to add new memory cards -->
+        <div class="fixed-action-btn">
+            <a class="btn-floating btn-large blue">
+                <i class="large material-icons">add</i>
+            </a>
+            <ul>
+                <li><a class="btn-floating blue-grey lighten-5 black-text" id="newpsx">PS</a></li>
+                <li><a class="btn-floating blue" id="newdc">DC</a></li>
+            </ul>
+        </div>
+
+
+        <!-- Tabs -->
+        <div class="row"" id="tabs-container">
+            <div class="col s12">
+                <ul class="tabs">
+                    <template id="tab-hdr-tmpl">
+                        <!-- href need to reference the tab-body-tmpl -->
+                        <li class="tab col s3"><a href="#ref">Text</a></li>
+                    </template>
+                </ul>
+            </div>
+
+            <template id="tab-body-tmpl">
+                <!-- ID need to be added and referenced by the tab-hdr-tmpl -->
+                <div class="col s12">
+                    <div class ="vmuviewer"></div>
+                </div>
+            </template>
+            <template id="vmuviewer-tmpl">
+                <div>
+                    <input type="file" class="file" />
+                    <button class="download">Download</button>
+                    <table class="elements">
+                        <tr>
+                            <th>Name</th>
+                            <th>Timestamp</th>
+                            <th>Blocks</th>
+                            <th>VM Description</th>
+                            <th>DC Description</th>
+                            <th>Icon</th>
+                            <th>Delete</th>
+                        </tr>
+                    </table>
+                    <canvas class="memorycard" />
+                </div>
+            </template>
+        </div>
+    </main>
+    <footer></footer>
+</body>
+</html>
