@@ -79,7 +79,7 @@ WebController.prototype.createTab = function() {
     newANode.href = "#" + newID;
 
     const controller = this;
-    newANode.addEventListener("dragover", function (event) {
+    newANode.addEventListener("dragenter", function (event) {
         if (event.dataTransfer.types.includes(VMUViewerController.prototype.DRAG_AND_DROP_TYPE)) {
             controller.tabController.select(newID);
         }
