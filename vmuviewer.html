@@ -33,26 +33,26 @@
 </head>
 <body>
     <header>VMU Viewer</header>
-    <main id ="vmu">
+    <main>
         <button id="addViewer">Add empty VMU</button>
-    	<template id="vmuviewer">
-	    	<div>
-		        <input type="file" class="file" />
+        <template id="vmuviewer">
+            <div class="vmu">
+                <input type="file" class="file" />
                 <button class="download">Download</button>
-		        <table class="elements">
-		            <tr>
-		                <th>Name</th>
-		                <th>Timestamp</th>
-		                <th>Blocks</th>
-		                <th>VM Description</th>
-		                <th>DC Description</th>
-		                <th>Icon</th>
+                <table class="elements">
+                    <tr>
+                        <th>Name</th>
+                        <th>Timestamp</th>
+                        <th>Blocks</th>
+                        <th>VM Description</th>
+                        <th>DC Description</th>
+                        <th>Icon</th>
                         <th>Delete</th>
-		            </tr>
-		        </table>
-		        <canvas class="memorycard" />
-	    	</div>
-	    </template>
+                    </tr>
+                </table>
+                <canvas class="memorycard" />
+            </div>
+        </template>
     </main>
     <footer></footer>
 </body>

@@ -1,11 +1,29 @@
+/**** Some Materialize customization ****/
 
+/* Remove materialize padding */
+.row, .col {
+    padding-left: 0!important;
+    padding-right: 0!important;
+}
+
+#toast-container {
+    min-width: 10%;
+    top: 50%;
+    right: 50%;
+    transform: translateX(50%) translateY(50%);
+}
+
+
+/**** Other elements ****/
+
+/* First table row */
 .elements tr:first-child th {
-    background-color: #EAEAEA;
+    /* background-color: #EAEAEA; */
     text-transform: uppercase;
 }
 
 
-.elements tr:hover {
+.elements tr:hover:not(:first-child) {
     background-color: #EAEAFF;
 }
 
@@ -22,15 +40,15 @@
 }
 
 /*@media only screen and (max-width: 650px) {
-    #vmu .elements th:nth-child(n+2):nth-child(-n+4),
-    #vmu .elements td:nth-child(n+2):nth-child(-n+4) {
+    .vmu .elements th:nth-child(n+2):nth-child(-n+4),
+    .vmu .elements td:nth-child(n+2):nth-child(-n+4) {
         display: none;
     }
 }*/
 
 @media only screen and (max-width: 500px) {
-    #vmu .elements th:nth-child(n+2):nth-child(-n+4),
-    #vmu .elements td:nth-child(n+2):nth-child(-n+4) {
+    .vmu .elements th:nth-child(n+2):nth-child(-n+4),
+    .vmu .elements td:nth-child(n+2):nth-child(-n+4) {
         display: none;
     }
 }

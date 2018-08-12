@@ -20,7 +20,7 @@
     <!-- iOS Safari -->
     <meta name="apple-mobile-web-app-status-bar-style" content="#447AC4">
 
-    <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
+    <link rel="stylesheet" type="text/css" href="style.css" />
 
     <!-- Materialize library -->
     <!--Import Google Icon Font-->
@@ -37,18 +37,18 @@
     <script src="js/vmuviewer-mat.js"></script>
 </head>
 <body>
-    <header>VMU Viewer</header>
+    <!-- <header>VMU Viewer</header> -->
 
     <main>
         <!-- Floating button to add new memory cards -->
         <div class="fixed-action-btn">
-            <a class="btn-floating btn-large blue">
+            <a class="btn-floating btn-large blue" id="newcard">
                 <i class="large material-icons">add</i>
             </a>
-            <ul>
+            <!-- <ul>
                 <li><a class="btn-floating blue-grey lighten-5 black-text" id="newpsx">PS</a></li>
                 <li><a class="btn-floating blue" id="newdc">DC</a></li>
-            </ul>
+            </ul> -->
         </div>
 
 
@@ -70,7 +70,7 @@
                 </div>
             </template>
             <template id="vmuviewer-tmpl">
-                <div>
+                <div class="vmu">
                     <input type="file" class="file" />
                     <button class="download">Download</button>
                     <table class="elements">

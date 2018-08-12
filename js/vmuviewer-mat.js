@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function showError(msg) {
     console.error(msg);
+
+    M.toast({
+        html: msg,
+        classes: 'rounded red'
+    })
 }
 
 function WebController(container) {
@@ -45,15 +50,10 @@ function WebController(container) {
     const floatingButton = container.querySelectorAll('.fixed-action-btn');
     const instances = M.FloatingActionButton.init(floatingButton, {});
 
-    const dcButton = document.getElementById("newdc");
+    const dcButton = document.getElementById("newcard");
     dcButton.addEventListener("click", function() {
-        console.log("New Dreamcast");
+        console.log("New card");
         controller.createTab();
-    });
-
-    const psxButton = document.getElementById("newpsx");
-    psxButton.addEventListener("click", function() {
-        console.log("New PSX");
     });
 
     this.createTab();

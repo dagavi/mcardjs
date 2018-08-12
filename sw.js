@@ -52,9 +52,23 @@ self.addEventListener("activate", function(event) {
     );
 });
 
+const domainsToCache = ["fonts.googleapis.com", "fonts.gstatic.com"];
+
 function cacheFail(request) {
     console.info("Cache fail: " + request.url);
-    return fetch(request)
+    var requestUrl = new URL(request.url);
+    if (!domainsToCache.includes(requestUrl.origin)) {
+        return fetch(request);
+    }
+
+    // Useful to cache variable URL from Google fonts
+    return caches.open(staticCacheName).then(function(cache) {
+        return fetch(request).then(function(response) {
+            console.info("Cached on fetch: " request.url);
+            cache.put(request, response.clone());
+            return response;
+        });
+    });
 }
 
 self.addEventListener("fetch", function(event) {
