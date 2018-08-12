@@ -57,7 +57,7 @@ const domainsToCache = ["fonts.googleapis.com", "fonts.gstatic.com"];
 function cacheFail(request) {
     console.info("Cache fail: " + request.url);
     var requestUrl = new URL(request.url);
-    if (!domainsToCache.includes(requestUrl.origin)) {
+    if (!domainsToCache.includes(requestUrl.hostname)) {
         return fetch(request);
     }
 
