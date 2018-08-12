@@ -64,7 +64,7 @@ function cacheFail(request) {
     // Useful to cache variable URL from Google fonts
     return caches.open(staticCacheName).then(function(cache) {
         return fetch(request).then(function(response) {
-            console.info("Cached on fetch: " request.url);
+            console.info("Cached on fetch: " + request.url);
             cache.put(request, response.clone());
             return response;
         });
