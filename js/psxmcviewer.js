@@ -281,13 +281,13 @@ PSXMCViewerController.prototype.drawMemoryCard = function() {
     const canvas = this.container.querySelector(".memorycard")
 
     canvas.width = PSXMC_CANVAS_FULL_BLOCK_SIZE*PSXMC_CANVAS_BLOCKS_PER_COLUMN;
-    canvas.height = PSXMC_CANVAS_FULL_BLOCK_SIZE*(TOTAL_BLOCKS/PSXMC_CANVAS_BLOCKS_PER_COLUMN);
+    canvas.height = PSXMC_CANVAS_FULL_BLOCK_SIZE*(PSXMC.prototype.TOTAL_BLOCKS/PSXMC_CANVAS_BLOCKS_PER_COLUMN);
     canvas.style.border = "1px solid";
 
     // console.log("Canvas: " + canvas.width + "x" + canvas.height);
 
     var ctx = canvas.getContext("2d");
-    for (let idx = 0; idx < TOTAL_BLOCKS; ++idx)
+    for (let idx = 0; idx < PSXMC.prototype.TOTAL_BLOCKS; ++idx)
         this.drawMemoryCardBlock(ctx, idx);
 
 }

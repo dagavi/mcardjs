@@ -344,13 +344,13 @@ VMUViewerController.prototype.drawMemoryCard = function() {
     const canvas = this.container.querySelector(".memorycard")
 
     canvas.width = VMU_CANVAS_FULL_BLOCK_SIZE*VMU_CANVAS_BLOCKS_PER_COLUMN;
-    canvas.height = VMU_CANVAS_FULL_BLOCK_SIZE*(TOTAL_BLOCKS/VMU_CANVAS_BLOCKS_PER_COLUMN);
+    canvas.height = VMU_CANVAS_FULL_BLOCK_SIZE*(VMU.prototype.TOTAL_BLOCKS/VMU_CANVAS_BLOCKS_PER_COLUMN);
     canvas.style.border = "1px solid";
 
     // console.log("Canvas: " + canvas.width + "x" + canvas.height);
 
     var ctx = canvas.getContext("2d");
-    for (let idx = 0; idx < TOTAL_BLOCKS; ++idx)
+    for (let idx = 0; idx < VMU.prototype.TOTAL_BLOCKS; ++idx)
         this.drawMemoryCardBlock(ctx, idx);
 
 }

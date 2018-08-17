@@ -6,15 +6,20 @@
         http://dev.dcemulation.org/tutorials/all-about-vmu.htm
 */
 
-const MEMORY_SIZE = 128*1024;
-const BLOCK_SIZE = 512;
-const TOTAL_BLOCKS = MEMORY_SIZE/BLOCK_SIZE;
-const ROOT_BLOCK = 255;
-
 function VMU(arrayBuffer) {
     if (arrayBuffer) this.parseArrayBuffer(arrayBuffer);
     else this.createAndFormatVMU();
 }
+
+// Constants
+VMU.prototype.MEMORY_SIZE = 128*1024;
+VMU.prototype.BLOCK_SIZE = 512;
+VMU.prototype.TOTAL_BLOCKS = VMU.prototype.MEMORY_SIZE/VMU.prototype.BLOCK_SIZE;
+VMU.prototype.ROOT_BLOCK = 255;
+
+// Directory constants
+VMU.prototype.FREE_BLOCK = 0xfffc;
+VMU.prototype.LAST_BLOCK = 0xfffa;
 
 /*
 Root block [255] format:
@@ -37,28 +42,28 @@ Root block [255] format:
     ...
 */
 VMU.prototype.parseVMUHeader = function() {
-    this.formatIndicator       = new Uint8Array (this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK , 16);
-    this.customColours         = new Uint8Array (this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x10, 1);
-    this.colourBlue            = new Uint8Array (this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x11, 1);
-    this.colourGreen           = new Uint8Array (this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x12, 1);
-    this.colourRed             = new Uint8Array (this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x13, 1);
-    this.colourAlpha           = new Uint8Array (this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x14, 1);
-    this.timestamp             = new Uint8Array (this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x30, 8);
-    this.fatLocationView       = new Uint16Array(this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x46, 1);
-    this.fatSizeView           = new Uint16Array(this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x48, 1);
-    this.directoryLocationView = new Uint16Array(this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x4a, 1);
-    this.directorySizeView     = new Uint16Array(this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x4c, 1);
-    this.iconShapeView         = new Uint16Array(this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x4e, 1);
-    this.noUserBlocksView      = new Uint16Array(this.arrayBuffer, BLOCK_SIZE*ROOT_BLOCK + 0x50, 1);
+    this.formatIndicator       = new Uint8Array (this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK , 16);
+    this.customColours         = new Uint8Array (this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x10, 1);
+    this.colourBlue            = new Uint8Array (this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x11, 1);
+    this.colourGreen           = new Uint8Array (this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x12, 1);
+    this.colourRed             = new Uint8Array (this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x13, 1);
+    this.colourAlpha           = new Uint8Array (this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x14, 1);
+    this.timestamp             = new Uint8Array (this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x30, 8);
+    this.fatLocationView       = new Uint16Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x46, 1);
+    this.fatSizeView           = new Uint16Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x48, 1);
+    this.directoryLocationView = new Uint16Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x4a, 1);
+    this.directorySizeView     = new Uint16Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x4c, 1);
+    this.iconShapeView         = new Uint16Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x4e, 1);
+    this.noUserBlocksView      = new Uint16Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*VMU.prototype.ROOT_BLOCK + 0x50, 1);
 }
 
 VMU.prototype.getFATView = function() {
-    return new Uint16Array(this.arrayBuffer, BLOCK_SIZE*this.fatLocationView[0], BLOCK_SIZE/2); // Divide by 2 because is Uint16
+    return new Uint16Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*this.fatLocationView[0], VMU.prototype.BLOCK_SIZE/2); // Divide by 2 because is Uint16
 }
 
 VMU.prototype.createAndFormatVMU = function() {
     console.log("Creating a new VMU");
-    const dataArray = new Uint8Array(BLOCK_SIZE*TOTAL_BLOCKS);
+    const dataArray = new Uint8Array(VMU.prototype.BLOCK_SIZE*VMU.prototype.TOTAL_BLOCKS);
     dataArray.fill(0);
 
     this.arrayBuffer = dataArray.buffer;
@@ -74,7 +79,7 @@ VMU.prototype.createAndFormatVMU = function() {
     this.fatView                  = this.getFATView();
 
     // UnknownValues
-    const typedArray = this.getBlockView(ROOT_BLOCK);
+    const typedArray = this.getBlockView(VMU.prototype.ROOT_BLOCK);
     typedArray[0x40] = 0xff;
     typedArray[0x44] = 0xff;
     typedArray[0x52] = 0x1f;
@@ -116,16 +121,16 @@ VMU.prototype.createAndFormatVMU = function() {
 
     // Start FAT
     // Directory
-    this.fatView.fill(FREE_BLOCK);
+    this.fatView.fill(VMU.prototype.FREE_BLOCK);
     for (let directoryIdx = 0; directoryIdx < this.directorySizeView[0]; ++directoryIdx) {
         const block = this.directoryLocationView[0] - directoryIdx;
         let nextBlock = block - 1;
-        if (directoryIdx == this.directorySizeView[0] - 1) nextBlock = LAST_BLOCK;
+        if (directoryIdx == this.directorySizeView[0] - 1) nextBlock = VMU.prototype.LAST_BLOCK;
         this.fatView[block] = nextBlock;
     }
 
-    this.fatView[ROOT_BLOCK] = LAST_BLOCK; // The header block
-    this.fatView[this.fatLocationView[0]] = LAST_BLOCK; // The FAT block
+    this.fatView[VMU.prototype.ROOT_BLOCK] = VMU.prototype.LAST_BLOCK; // The header block
+    this.fatView[this.fatLocationView[0]] = VMU.prototype.LAST_BLOCK; // The FAT block
 
     this.logRootBlock();
 }
@@ -133,8 +138,8 @@ VMU.prototype.createAndFormatVMU = function() {
 VMU.prototype.parseArrayBuffer = function(arrayBuffer) {
     console.log("Parse VMU " + arrayBuffer.byteLength)
 
-    if (arrayBuffer.byteLength != MEMORY_SIZE) {
-        throw new Error("Size error. VMU has to be " + MEMORY_SIZE + " bytes. Buffer contains " + arrayBuffer.byteLength + " bytes");
+    if (arrayBuffer.byteLength != VMU.prototype.MEMORY_SIZE) {
+        throw new Error("Size error. VMU has to be " + VMU.prototype.MEMORY_SIZE + " bytes. Buffer contains " + arrayBuffer.byteLength + " bytes");
     }
 
     this.arrayBuffer = arrayBuffer;
@@ -174,8 +179,8 @@ VMU.prototype.parseDirectory = function() {
     let block = this.directoryLocationView[0];
     for (let processedBlocks = 0; processedBlocks < this.directorySizeView[0]; ++processedBlocks) {
         // console.log("[Directory " + processedBlocks + " = " + block + "]")
-        for (let directoryOffset = 0; directoryOffset < BLOCK_SIZE; directoryOffset += 32) {
-            const directoryEntryView = new Uint8Array(this.arrayBuffer, BLOCK_SIZE*block + directoryOffset, 32);
+        for (let directoryOffset = 0; directoryOffset < VMU.prototype.BLOCK_SIZE; directoryOffset += 32) {
+            const directoryEntryView = new Uint8Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*block + directoryOffset, 32);
             const directory = this.parseDirectoryEntry(directoryEntryView);
             if (directory.type[0] != 0) {
                 this.entries.push(directory);
@@ -191,14 +196,14 @@ VMU.prototype.getTimeStamp = function() {
 
 
 VMU.prototype.parseDirectoryEntry = function(directoryEntryView) {
-    return new Directory(this, directoryEntryView);
+    return new VMUDirectory(this, directoryEntryView);
 }
 
 /*
  * Return an Uint8Array with the content of the selected block
  */
 VMU.prototype.getBlockView = function(block) {
-    return new Uint8Array(this.arrayBuffer, BLOCK_SIZE*block, BLOCK_SIZE);
+    return new Uint8Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*block, VMU.prototype.BLOCK_SIZE);
 }
 
 /*
@@ -212,7 +217,7 @@ VMU.prototype.getBlockView = function(block) {
     0x1a-0x1b : 16 bit int (little endian) : offset of header (in blocks) from file start
     0x1c-0x1f : unused (all zero)
 */
-function Directory(mcard, directoryEntryView) {
+function VMUDirectory(mcard, directoryEntryView) {
     this.mcard        = mcard;
     this.type         = new Uint8Array (directoryEntryView.buffer, directoryEntryView.byteOffset + 0, 1);
     this.copy         = new Uint8Array (directoryEntryView.buffer, directoryEntryView.byteOffset + 1, 1);
@@ -223,22 +228,22 @@ function Directory(mcard, directoryEntryView) {
     this.headerOffset = new Uint16Array(directoryEntryView.buffer, directoryEntryView.byteOffset + 26, 1);
 }
 
-const utf8Decoder = new TextDecoder("utf-8");
+VMUDirectory.prototype.utf8Decoder = new TextDecoder("utf-8");
 
-Directory.prototype.getFileName = function() {
-    return utf8Decoder.decode(this.filename);
+VMUDirectory.prototype.getFileName = function() {
+    return VMUDirectory.prototype.utf8Decoder.decode(this.filename);
 }
 
-Directory.prototype.getTimeStamp = function() {
+VMUDirectory.prototype.getTimeStamp = function() {
     return bcdToDate(this.timestamp);
 }
 
-Directory.prototype.getArrayBuffer = function() {
+VMUDirectory.prototype.getArrayBuffer = function() {
     return new Uint8Array(this.type.buffer, this.type.byteOffset, 32);
 }
 
-Directory.prototype.getContent = function() {
-    return new Content(this);
+VMUDirectory.prototype.getContent = function() {
+    return new VMUContent(this);
 }
 
 /*
@@ -260,7 +265,7 @@ Content header:
     $80     512*n           Nybbles     Icon bitmaps (32x32 pixels)
     ...     depends on type ...         Graphic eyecatch palette and bitmap
 */
-function Content(directory) {
+function VMUContent(directory) {
     let dataBlock = directory.firstBlock[0];
     for (let idx = 0; idx < directory.headerOffset[0]; ++idx) dataBlock = directory.mcard.getNextFATBlock(dataBlock);
     const contentView = directory.mcard.getBlockView(dataBlock);
@@ -278,16 +283,16 @@ function Content(directory) {
     this.iconPalette     = new Uint16Array(contentView.buffer, contentView.byteOffset + 0x60, 16);
 }
 
-Content.prototype.getVMSDescription = function() {
-    return utf8Decoder.decode(this.vmsDescription);
+VMUContent.prototype.getVMSDescription = function() {
+    return VMUDirectory.prototype.utf8Decoder.decode(this.vmsDescription);
 }
 
-Content.prototype.getBootDescription = function() {
-    return utf8Decoder.decode(this.bootDescription);
+VMUContent.prototype.getBootDescription = function() {
+    return VMUDirectory.prototype.utf8Decoder.decode(this.bootDescription);
 }
 
-Content.prototype.getcreatorID = function() {
-    return utf8Decoder.decode(this.creatorID.slice(0, this.creatorID.indexOf(0)));
+VMUContent.prototype.getcreatorID = function() {
+    return VMUDirectory.prototype.utf8Decoder.decode(this.creatorID.slice(0, this.creatorID.indexOf(0)));
 }
 
 /*
@@ -295,7 +300,7 @@ Content.prototype.getcreatorID = function() {
     | 7 6 5 4 | 3 2 1 0 |
     |  Left   |  Right  |
 */
-Content.prototype.getIconBitmap = function(bitmapIdx) {
+VMUContent.prototype.getIconBitmap = function(bitmapIdx) {
     if (bitmapIdx >= this.numIcons[0]) {
         console.error("Asking for bitmap " + bitmapIdx + " when number of bitmaps = " + this.numIcons[0]);
         return null;
@@ -309,9 +314,9 @@ Content.prototype.getIconBitmap = function(bitmapIdx) {
         block = mcard.getNextFATBlock(block);
         --bitmapIdx;
     }
-    const bitmap = new Uint8Array(BLOCK_SIZE);
-    bitmap.set(new Uint8Array(directoryEntryView.buffer, BLOCK_SIZE*block + offset, BLOCK_SIZE - 0x80));
-    bitmap.set(new Uint8Array(directoryEntryView.buffer, BLOCK_SIZE*mcard.getNextFATBlock(block), 0x80), BLOCK_SIZE - 0x80);
+    const bitmap = new Uint8Array(VMU.prototype.BLOCK_SIZE);
+    bitmap.set(new Uint8Array(directoryEntryView.buffer, VMU.prototype.BLOCK_SIZE*block + offset, VMU.prototype.BLOCK_SIZE - 0x80));
+    bitmap.set(new Uint8Array(directoryEntryView.buffer, VMU.prototype.BLOCK_SIZE*mcard.getNextFATBlock(block), 0x80), VMU.prototype.BLOCK_SIZE - 0x80);
     return bitmap;
 }
 
@@ -319,16 +324,12 @@ Content.prototype.getIconBitmap = function(bitmapIdx) {
 Helper that provides the number of seconds per frame in ms.
 For static or corrupted files return 0.
 */
-Content.prototype.frameIntervalInMs = function() {
+VMUContent.prototype.frameIntervalInMs = function() {
     if (this.numIcons[0] > 1 && this.animationSpeed[0] > 0) {
         return 1000*this.animationSpeed[0]/10 /this.numIcons[0];
     }
     return 0;
 }
-
-
-const FREE_BLOCK = 0xfffc;
-const LAST_BLOCK = 0xfffa;
 
 VMU.prototype.deleteDirectoryEntry = function(directory) {
     const idx = this.entries.indexOf(directory);
@@ -355,8 +356,8 @@ VMU.prototype.findFreeDirectoryEntry = function() {
     let block = this.directoryLocationView[0];
     for (let processedBlocks = 0; processedBlocks < this.directorySizeView[0]; ++processedBlocks) {
         // console.log("[Directory " + processedBlocks + " = " + block + "]")
-        for (let directoryOffset = 0; directoryOffset < BLOCK_SIZE; directoryOffset += 32) {
-            const directoryEntryView = new Uint8Array(this.arrayBuffer, BLOCK_SIZE*block + directoryOffset, 32);
+        for (let directoryOffset = 0; directoryOffset < VMU.prototype.BLOCK_SIZE; directoryOffset += 32) {
+            const directoryEntryView = new Uint8Array(this.arrayBuffer, VMU.prototype.BLOCK_SIZE*block + directoryOffset, 32);
             const directory = this.parseDirectoryEntry(directoryEntryView);
             if (directory.type[0] == 0) return directory;
         }
@@ -386,7 +387,7 @@ VMU.prototype.copyDirectoryEntry = function(directory) {
         dstMemory.set(srcMemory);
 
         if (idx < blocks.length - 1) this.fatView[blocks[idx]] = blocks[idx + 1];
-        else this.fatView[blocks[idx]] = LAST_BLOCK;
+        else this.fatView[blocks[idx]] = VMU.prototype.LAST_BLOCK;
 
         // Change srcBlock with "directory" fat
         srcBlock = directory.mcard.getNextFATBlock(srcBlock);
@@ -415,15 +416,15 @@ Method to verify a FAT chain.
 Returns the number of blocks of the chain until endmark (included) is found.
  */
 VMU.prototype.verifyFATChain = function(block) {
-    if (block == FREE_BLOCK) return 0;
+    if (block == VMU.prototype.FREE_BLOCK) return 0;
 
     let counter = 0;
-    while (block != LAST_BLOCK) {
-        if ((block & 0xFF00) != 0 && block != FREE_BLOCK && block != LAST_BLOCK) {
+    while (block != VMU.prototype.LAST_BLOCK) {
+        if ((block & 0xFF00) != 0 && block != VMU.prototype.FREE_BLOCK && block != VMU.prototype.LAST_BLOCK) {
             throw Error("Unknown block value: " + block);
         }
 
-        if (block == FREE_BLOCK) {
+        if (block == VMU.prototype.FREE_BLOCK) {
             throw Error("Free block found at block: " + block);
         }
 
@@ -439,9 +440,9 @@ Pre: FAT is OK.
  */
 VMU.prototype.freeBlocks = function(block) {
     let counter = 0;
-    while (block != LAST_BLOCK) {
+    while (block != VMU.prototype.LAST_BLOCK) {
         const nextBlock = this.getNextFATBlock(block);
-        this.fatView[block] = FREE_BLOCK;
+        this.fatView[block] = VMU.prototype.FREE_BLOCK;
         block = nextBlock;
         ++counter;
     }
@@ -456,7 +457,7 @@ If no block is found throws an error.
 VMU.prototype.findNextFreeBlock = function(start) {
     if (start == undefined) start = this.noUserBlocksView[0];
     for (let block = start - 1; block >= 0; --block) {
-        if (this.fatView[block] == FREE_BLOCK) return block;
+        if (this.fatView[block] == VMU.prototype.FREE_BLOCK) return block;
     }
     throw Error("Can't find free blocks from start block: " + start);
 }

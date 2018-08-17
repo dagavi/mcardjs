@@ -6,23 +6,34 @@
         http://problemkaputt.de/psx-spx.htm
 */
 
-const MEMORY_SIZE = 128*1024;
-const BLOCK_SIZE = 8*1024;
-const TOTAL_BLOCKS = MEMORY_SIZE/BLOCK_SIZE;
-const ROOT_BLOCK = 0;
-
-const FRAME_SIZE = 128;
-const FRAMES_IN_BLOCK = BLOCK_SIZE/FRAME_SIZE;
-const NUM_DIRECTORY_ENTRIES = 15;
-
 function PSXMC(arrayBuffer) {
     if (arrayBuffer) this.parseArrayBuffer(arrayBuffer);
     else this.createAndFormatPSXMC();
 }
 
+// Constants
+PSXMC.prototype.MEMORY_SIZE = 128*1024;
+PSXMC.prototype.BLOCK_SIZE = 8*1024;
+PSXMC.prototype.TOTAL_BLOCKS = PSXMC.prototype.MEMORY_SIZE/PSXMC.prototype.BLOCK_SIZE;
+PSXMC.prototype.ROOT_BLOCK = 0;
+
+PSXMC.prototype.FRAME_SIZE = 128;
+PSXMC.prototype.FRAMES_IN_BLOCK = PSXMC.prototype.BLOCK_SIZE/PSXMC.prototype.FRAME_SIZE;
+PSXMC.prototype.NUM_DIRECTORY_ENTRIES = 15;
+
+// Directory constants
+PSXMC.prototype.DIRECTORY_IN_USE = 0x50;
+PSXMC.prototype.DIRECTORY_FREE   = 0xA0;
+
+PSXMC.prototype.FIRST_BLOCK      = 0x1;
+PSXMC.prototype.MID_BLOCK        = 0x2;
+PSXMC.prototype.LAST_BLOCK       = 0x3;
+
+PSXMC.prototype.NEXT_END_MARKER  = 0xFFFF;
+
 PSXMC.prototype.createAndFormatPSXMC = function() {
     console.log("Creating a new PSX Memory Card");
-    const dataArray = new Uint8Array(BLOCK_SIZE*TOTAL_BLOCKS);
+    const dataArray = new Uint8Array(PSXMC.prototype.BLOCK_SIZE*PSXMC.prototype.TOTAL_BLOCKS);
     dataArray.fill(0);
 
     this.arrayBuffer = dataArray.buffer;
@@ -38,7 +49,7 @@ PSXMC.prototype.createAndFormatPSXMC = function() {
 
     this.entries = [];
 
-    for (let frame = 0; frame < NUM_DIRECTORY_ENTRIES; ++frame) {
+    for (let frame = 0; frame < PSXMC.prototype.NUM_DIRECTORY_ENTRIES; ++frame) {
         const directory = this.getDirectory(frame);
         directory.delete();
         directory.checksum[0] = 0xA0;
@@ -76,8 +87,8 @@ PSXMC.prototype.createAndFormatPSXMC = function() {
 PSXMC.prototype.parseArrayBuffer = function(arrayBuffer) {
     console.log("Parse PSX Memory Card " + arrayBuffer.byteLength)
 
-    if (arrayBuffer.byteLength != MEMORY_SIZE) {
-        throw new Error("Size error. PSX Memory Card has to be " + MEMORY_SIZE + " bytes. Buffer contains " + arrayBuffer.byteLength + " bytes");
+    if (arrayBuffer.byteLength != PSXMC.prototype.MEMORY_SIZE) {
+        throw new Error("Size error. PSX Memory Card has to be " + PSXMC.prototype.MEMORY_SIZE + " bytes. Buffer contains " + arrayBuffer.byteLength + " bytes");
     }
 
     this.arrayBuffer = arrayBuffer;
@@ -86,11 +97,11 @@ PSXMC.prototype.parseArrayBuffer = function(arrayBuffer) {
 }
 
 PSXMC.prototype.getFrame = function(block, frame) {
-    return new Uint8Array(this.arrayBuffer, BLOCK_SIZE*block + FRAME_SIZE*frame, FRAME_SIZE);
+    return new Uint8Array(this.arrayBuffer, PSXMC.prototype.BLOCK_SIZE*block + PSXMC.prototype.FRAME_SIZE*frame, PSXMC.prototype.FRAME_SIZE);
 }
 
 PSXMC.prototype.getBlock = function(block) {
-    return new Uint8Array(this.arrayBuffer, BLOCK_SIZE*block, BLOCK_SIZE);
+    return new Uint8Array(this.arrayBuffer, PSXMC.prototype.BLOCK_SIZE*block, PSXMC.prototype.BLOCK_SIZE);
 }
 
 /*
@@ -100,7 +111,7 @@ PSXMC.prototype.getDirectory = function(idx) {
     if (idx < 0 || idx > 14) {
         throw new Error("Ask for directory " + idx + " when this value need to be in range [0..14]");
     }
-    return new Directory(this, this.getFrame(0, idx + 1));
+    return new PSXMCDirectory(this, this.getFrame(0, idx + 1));
 }
 
 /*
@@ -111,7 +122,7 @@ PSXMC.prototype.parseDirectory = function() {
 
     this.entries = [];
 
-    for (let frame = 0; frame < NUM_DIRECTORY_ENTRIES; ++frame) {
+    for (let frame = 0; frame < PSXMC.prototype.NUM_DIRECTORY_ENTRIES; ++frame) {
         const directory = this.getDirectory(frame);
         if (directory.inUse() && directory.isFirstBlock()) this.entries.push(directory);
     }
@@ -144,7 +155,7 @@ PSXMC.prototype.copyDirectoryEntry = function(directory) {
 
     const freeDirectories = [];
 
-    for (let i = 0; i < NUM_DIRECTORY_ENTRIES && freeDirectories.length < directory.getNumBlocks(); ++i) {
+    for (let i = 0; i < PSXMC.prototype.NUM_DIRECTORY_ENTRIES && freeDirectories.length < directory.getNumBlocks(); ++i) {
         const iDirectory = this.getDirectory(i);
         if (iDirectory.itsFree()) freeDirectories.push(iDirectory);
     }
@@ -173,15 +184,6 @@ PSXMC.prototype.copyDirectoryEntry = function(directory) {
     this.entries.push(freeDirectories[0]);
 }
 
-const DIRECTORY_IN_USE = 0x50;
-const DIRECTORY_FREE   = 0xA0;
-
-const FIRST_BLOCK      = 0x1;
-const MID_BLOCK        = 0x2;
-const LAST_BLOCK       = 0x3;
-
-const NEXT_END_MARKER  = 0xFFFF;
-
 /*
 Directory Frames (Block 0, Frame 1..15)
   00h-03h Block Allocation State
@@ -202,7 +204,7 @@ Directory Frames (Block 0, Frame 1..15)
 Filesize [04h..07h] and Filename [0Ah..1Eh] are stored only in the first
 directory entry of a file (ie. with State=51h or A1h), other directory entries have that bytes zero-filled.
 */
-function Directory(mcard, directoryEntryView) {
+function PSXMCDirectory(mcard, directoryEntryView) {
     this.mcard     = mcard;
     this.view      = directoryEntryView;
     this.state     = new Uint32Array(directoryEntryView.buffer, directoryEntryView.byteOffset + 0x00, 1);
@@ -212,71 +214,71 @@ function Directory(mcard, directoryEntryView) {
     this.checksum  = new Uint8Array (directoryEntryView.buffer, directoryEntryView.byteOffset + 0x7F, 1);
 }
 
-Directory.prototype.utf8Decoder = new TextDecoder("utf-8");
+PSXMCDirectory.prototype.utf8Decoder = new TextDecoder("utf-8");
 
-Directory.prototype.getFrameNumber = function() {
-    return this.state.byteOffset/FRAME_SIZE;
+PSXMCDirectory.prototype.getFrameNumber = function() {
+    return this.state.byteOffset/PSXMC.prototype.FRAME_SIZE;
 }
 
-Directory.prototype.inUse = function() {
-    return !this.itsFree() && (this.state[0] & DIRECTORY_IN_USE) == DIRECTORY_IN_USE;
+PSXMCDirectory.prototype.inUse = function() {
+    return !this.itsFree() && (this.state[0] & PSXMC.prototype.DIRECTORY_IN_USE) == PSXMC.prototype.DIRECTORY_IN_USE;
 }
 
-Directory.prototype.delete = function() {
-    this.state[0]     = (this.state[0] & 0x0F) | DIRECTORY_FREE;
-    this.nextBlock[0] = NEXT_END_MARKER;
+PSXMCDirectory.prototype.delete = function() {
+    this.state[0]     = (this.state[0] & 0x0F) | PSXMC.prototype.DIRECTORY_FREE;
+    this.nextBlock[0] = PSXMC.prototype.NEXT_END_MARKER;
 }
 
-Directory.prototype.itsFree = function() {
-    return (this.state[0] & DIRECTORY_FREE) == DIRECTORY_FREE;
+PSXMCDirectory.prototype.itsFree = function() {
+    return (this.state[0] & PSXMC.prototype.DIRECTORY_FREE) == PSXMC.prototype.DIRECTORY_FREE;
 }
 
-Directory.prototype.isCorrect = function() {
+PSXMCDirectory.prototype.isCorrect = function() {
     return this.inUse() || this.itsFree();
 }
 
-Directory.prototype.isFirstBlock = function() {
-    return (this.state[0] & 0xF) == FIRST_BLOCK;
+PSXMCDirectory.prototype.isFirstBlock = function() {
+    return (this.state[0] & 0xF) == PSXMC.prototype.FIRST_BLOCK;
 }
 
-Directory.prototype.isMidBlock = function() {
-    return (this.state[0] & 0xF) == MID_BLOCK;
+PSXMCDirectory.prototype.isMidBlock = function() {
+    return (this.state[0] & 0xF) == PSXMC.prototype.MID_BLOCK;
 }
 
-Directory.prototype.isLastBlock = function() {
-    return (this.state[0] & 0xF) == LAST_BLOCK;
+PSXMCDirectory.prototype.isLastBlock = function() {
+    return (this.state[0] & 0xF) == PSXMC.prototype.LAST_BLOCK;
 }
 
-Directory.prototype.getNumBlocks = function() {
-    return Math.ceil(this.size[0]/BLOCK_SIZE);
+PSXMCDirectory.prototype.getNumBlocks = function() {
+    return Math.ceil(this.size[0]/PSXMC.prototype.BLOCK_SIZE);
 }
 
-Directory.prototype.nextBlockEnd = function() {
-    return this.nextBlock[0] == NEXT_END_MARKER;
+PSXMCDirectory.prototype.nextBlockEnd = function() {
+    return this.nextBlock[0] == PSXMC.prototype.NEXT_END_MARKER;
 }
 
-Directory.prototype.getNextDirectory = function() {
+PSXMCDirectory.prototype.getNextDirectory = function() {
     if (this.nextBlockEnd()) return null;
     return this.mcard.getDirectory(this.nextBlock[0]);
 }
 
-Directory.prototype.getFileName = function() {
+PSXMCDirectory.prototype.getFileName = function() {
     return this.utf8Decoder.decode(this.filename.slice(0, this.filename.indexOf(0)));
 }
 
-Directory.prototype.getRegion = function() {
+PSXMCDirectory.prototype.getRegion = function() {
     return this.getFileName().slice(0, 2);
 }
 
-Directory.prototype.getGameID = function() {
+PSXMCDirectory.prototype.getGameID = function() {
     return this.getFileName().slice(2, 12);
 }
 
-Directory.prototype.getFileNameText = function() {
+PSXMCDirectory.prototype.getFileNameText = function() {
     return this.getFileName().slice(12);
 }
 
-Directory.prototype.getFileHeader = function() {
+PSXMCDirectory.prototype.getFileHeader = function() {
     return new TitleFrame(this, this.mcard.getFrame(this.getFrameNumber(), 0));
 }
 
