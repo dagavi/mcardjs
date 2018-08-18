@@ -153,7 +153,7 @@ function VMUViewerController(container, fileName = VMUViewerController.prototype
     this.container.addEventListener("dragover", function (event) {
         // console.log("[VMUViewerController] dragover " + event.dataTransfer.types);
 
-        if ((event.dataTransfer.types.includes(controller.DRAG_AND_DROP_TYPE) && VMUViewerController.prototype.transferObject.mcard != controller.mcard)
+        if ((event.dataTransfer.types.includes(controller.DRAG_AND_DROP_TYPE) && VMUViewerController.prototype.transferObject.some(dir => dir.mcard != controller.mcard))
              || event.dataTransfer.types.includes("Files")) {
             event.dataTransfer.dropEffect = "copy";
             event.preventDefault();
@@ -167,11 +167,8 @@ function VMUViewerController(container, fileName = VMUViewerController.prototype
         console.log("[Drop] " + event.dataTransfer.types);
 
         if (event.dataTransfer.types.includes(controller.DRAG_AND_DROP_TYPE)) {
-            const directory = VMUViewerController.prototype.transferObject;
-
-            if (controller.mcard == directory.mcard) {
-                console.log("Copy to the same memory card");
-            }
+            const directories = VMUViewerController.prototype.transferObject.filter(dir => dir.mcard != controller.mcard);
+            const directory = directories[0];
 
             controller.mcard.copyDirectoryEntry(directory);
             controller.resetState();
@@ -206,7 +203,7 @@ function VMUViewerController(container, fileName = VMUViewerController.prototype
     this.drawMemoryCard();
 }
 
-VMUViewerController.prototype.transferObject = null;
+VMUViewerController.prototype.transferObject = [];
 
 VMUViewerController.prototype.resetState = function() {
     // Clear timers
@@ -264,13 +261,13 @@ VMUViewerController.prototype.displayDirectoryEntry = function(directory, table)
     row.draggable = true;
     row.addEventListener("dragstart", function(event) {
         console.log("[Drag start]");
-        VMUViewerController.prototype.transferObject = directory;
+        VMUViewerController.prototype.transferObject = [directory];
         event.dataTransfer.setData(controller.DRAG_AND_DROP_TYPE, null);
     });
 
     row.addEventListener("dragend", function(event) {
         console.log("[Drag end] Event dropEffect: " + event.dataTransfer.dropEffect);
-        VMUViewerController.prototype.transferObject = null;
+        VMUViewerController.prototype.transferObject = [];
     });
 
     row.addEventListener("click", function(event) {
