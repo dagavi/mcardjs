@@ -35,6 +35,10 @@
     <script src="js/sw-register.js"></script>
     <script src="js/vmu.js"></script>
     <script src="js/vmuviewer-mat.js"></script>
+
+    <script src="js/jistounicode.js"></script>
+    <script src="js/psxmc.js"></script>
+    <script src="js/psxmcviewer.js"></script>
 </head>
 <body>
     <!-- <header>VMU Viewer</header> -->
@@ -45,10 +49,10 @@
             <a class="btn-floating btn-large blue" id="newcard">
                 <i class="large material-icons">add</i>
             </a>
-            <!-- <ul>
-                <li><a class="btn-floating blue-grey lighten-5 black-text" id="newpsx">PS</a></li>
-                <li><a class="btn-floating blue" id="newdc">DC</a></li>
-            </ul> -->
+            <ul>
+                <li><a class="btn-floating blue-grey lighten-5 black-text" id="newpsxmc">PS</a></li>
+                <li><a class="btn-floating blue" id="newvmu">DC</a></li>
+            </ul>
         </div>
 
 
@@ -66,7 +70,7 @@
             <template id="tab-body-tmpl">
                 <!-- ID need to be added and referenced by the tab-hdr-tmpl -->
                 <div class="col s12">
-                    <div class ="vmuviewer"></div>
+                    <div class ="mcviewer"></div>
                 </div>
             </template>
             <template id="vmuviewer-tmpl">
@@ -80,6 +84,24 @@
                             <th>Blocks</th>
                             <th>VM Description</th>
                             <th>DC Description</th>
+                            <th>Icon</th>
+                            <th>Delete</th>
+                        </tr>
+                    </table>
+                    <canvas class="memorycard"></canvas>
+                </div>
+            </template>
+            <template id="psxmcviewer-tmpl">
+                <div class="psxmc">
+                    <input type="file" class="file" />
+                    <button class="download">Download</button>
+                    <table class="elements">
+                        <tr>
+                            <th>Region</th>
+                            <th>Game ID</th>
+                            <th>File Name</th>
+                            <th>Name</th>
+                            <th>Size</th>
                             <th>Icon</th>
                             <th>Delete</th>
                         </tr>

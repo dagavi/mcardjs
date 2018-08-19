@@ -50,16 +50,22 @@ function WebController(container) {
     const floatingButton = container.querySelectorAll('.fixed-action-btn');
     const instances = M.FloatingActionButton.init(floatingButton, {});
 
-    const dcButton = document.getElementById("newcard");
+    const dcButton = document.getElementById("newvmu");
     dcButton.addEventListener("click", function() {
-        console.log("New card");
-        controller.createTab();
+        console.log("New VMU card");
+        controller.createTab("vmu");
     });
 
-    this.createTab();
+    const psxButton = document.getElementById("newpsxmc");
+    psxButton.addEventListener("click", function() {
+        console.log("New PSX MC");
+        controller.createTab("psxmc");
+    });
+
+    this.createTab("vmu");
 }
 
-WebController.prototype.createTab = function() {
+WebController.prototype.createTab = function(type = null) {
     // Container for tabs
     const tabsContainer = this.container.querySelector("#tabs-container");
 
@@ -92,12 +98,14 @@ WebController.prototype.createTab = function() {
     const newDiv = newBodyNode.firstElementChild;
     newDiv.id = newID;
 
-    new VMUViewerController(newDiv.querySelector(".vmuviewer"), newID + ".bin");
+    if (type == "vmu") new VMUViewerController(newDiv.querySelector(".mcviewer"), newID + ".bin");
+    else if (type == "psxmc") new PSXMCViewerController(newDiv.querySelector(".mcviewer"), newID + ".srm");
 
     tabsContainer.appendChild(newBodyNode);
 
     if (this.tabController) this.tabController.destroy();
     this.tabController = M.Tabs.init(tabHdrContainer, {});
+    this.tabController.select(newID);
 }
 
 /* Source: https://stackoverflow.com/questions/23451726/saving-binary-data-as-file-using-javascript-from-a-browser
@@ -111,7 +119,7 @@ WebController.prototype.createTab = function() {
  * 2. If you want to support only modern browsers like Chrome, Edge, Firefox, etc.,
  *    then a simple implementation of saveAs function can be:
  */
-function saveAs(blob, fileName) {
+VMUViewerController.prototype.saveAs = function(blob, fileName) {
     var url = window.URL.createObjectURL(blob);
 
     var anchorElem = document.createElement("a");
@@ -135,7 +143,7 @@ VMUViewerController.prototype.DEFAULT_DOWNLOAD_FILENAME = "vmu.bin";
 VMUViewerController.prototype.DRAG_AND_DROP_TYPE = "mcard/dcvmu";
 
 function VMUViewerController(container, fileName = VMUViewerController.prototype.DEFAULT_DOWNLOAD_FILENAME) {
-    console.log("Loading VMU Viewer Controller: " + getNodePath(container));
+    console.log("Loading VMU Viewer Controller: " + VMUViewerController.prototype.getNodePath(container));
     const controller = this;
 
     // Clone template and add it to container
@@ -193,7 +201,7 @@ function VMUViewerController(container, fileName = VMUViewerController.prototype
 
     const download = this.container.querySelector(".download");
     download.addEventListener("click", function(event){
-        saveAs(new Blob([controller.mcard.arrayBuffer], {type: 'application/octet-stream'}), controller.fileName);
+        VMUViewerController.prototype.saveAs(new Blob([controller.mcard.arrayBuffer], {type: 'application/octet-stream'}), controller.fileName);
     });
 
     window.onerror = function(message, file, line, col, error) {
@@ -253,7 +261,7 @@ VMUViewerController.prototype.displayData = function() {
 }
 
 VMUViewerController.prototype.displayDirectoryEntry = function(directory, table) {
-    console.log("[" + pad(directory.type[0].toString(16), 2) + "] Filename: " + directory.getFileName() + " [" + directory.size[0] + " blocks][First " + directory.firstBlock[0] + "+" + directory.headerOffset[0] + "]");
+    console.log("[" + VMUViewerController.prototype.pad(directory.type[0].toString(16), 2) + "] Filename: " + directory.getFileName() + " [" + directory.size[0] + " blocks][First " + directory.firstBlock[0] + "+" + directory.headerOffset[0] + "]");
     const controller = this;
 
     // hexdump(new Uint8Array(arrayBuffer), directory.firstBlock[0]);
@@ -304,12 +312,12 @@ VMUViewerController.prototype.displayDirectoryEntry = function(directory, table)
     canvas.style.border = "1px solid";
 
     contentHeader.currentFrame = 0;
-    drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
+    VMUViewerController.prototype.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
 
     if (contentHeader.frameIntervalInMs() > 0) {
         const timer = setInterval(function drawInterval() {
             contentHeader.currentFrame = (contentHeader.currentFrame + 1)%contentHeader.numIcons[0];
-            drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
+            VMUViewerController.prototype.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
         }, contentHeader.frameIntervalInMs());
         this.timers.push(timer);
     }
@@ -376,7 +384,7 @@ VMUViewerController.prototype.drawMemoryCardBlock = function(context, blockIdx, 
     }
 
     if (bitmap) {
-        drawIconToContext(context, bitmap, palette, columnPixel + VMU_CANVAS_BLOCK_MARGIN + VMU_CANVAS_BLOCK_BORDER, rowPixel + VMU_CANVAS_BLOCK_MARGIN + VMU_CANVAS_BLOCK_BORDER);
+        VMUViewerController.prototype.drawIconToContext(context, bitmap, palette, columnPixel + VMU_CANVAS_BLOCK_MARGIN + VMU_CANVAS_BLOCK_BORDER, rowPixel + VMU_CANVAS_BLOCK_MARGIN + VMU_CANVAS_BLOCK_BORDER);
     }
     else {
         context.fillStyle = 'white';
@@ -392,7 +400,7 @@ Color bits: 4 groups x 4 bits
     | 15  14  13  12 | 11  10  9   8 |  7   6   5   4 |  3   2   1   0 |
     |      Alpha     |      Red      |      Green     |      Blue      |
 */
-function paletteToRGBA(palette) {
+VMUViewerController.prototype.paletteToRGBA = function(palette) {
     return {
         a :            ((palette >> 4*3) & 0xF)/15,
         r : Math.floor(((palette >> 4*2) & 0xF)/15*255),
@@ -401,20 +409,20 @@ function paletteToRGBA(palette) {
     };
 }
 
-function rgbaToStyleStr(rgba) {
+VMUViewerController.prototype.rgbaToStyleStr = function(rgba) {
     return "rgba(" + rgba.r + ", " + rgba.g + ", " + rgba.b + ", " + rgba.a + ")";
 }
 
-function drawIcon(canvas, bitmap, palette) {
+VMUViewerController.prototype.drawIcon = function(canvas, bitmap, palette) {
     var ctx = canvas.getContext("2d");
-    drawIconToContext(ctx, bitmap, palette, 0, 0);
+    VMUViewerController.prototype.drawIconToContext(ctx, bitmap, palette, 0, 0);
 }
 
-const imageCache = new Map();
+VMUViewerController.prototype.imageCache = new Map();
 
-function drawIconToContext(ctx, bitmap, palette, columnOffset = 0, rowOffset = 0) {
+VMUViewerController.prototype.drawIconToContext = function(ctx, bitmap, palette, columnOffset = 0, rowOffset = 0) {
     const cacheKey = bitmap;
-    if (!(cacheKey in imageCache)) {
+    if (!(cacheKey in VMUViewerController.prototype.imageCache)) {
         bitmap.forEach(function(data, index) {
             // 32x32 as nibbles (every byte = 2 pixels)
             const row = Math.floor(index/(32/2));
@@ -422,8 +430,8 @@ function drawIconToContext(ctx, bitmap, palette, columnOffset = 0, rowOffset = 0
 
             function drawPixel(column, row, pixelMap) {
                 const pixelPalette = palette[pixelMap];
-                const colors       = paletteToRGBA(pixelPalette);
-                const style        = rgbaToStyleStr(colors);
+                const colors       = VMUViewerController.prototype.paletteToRGBA(pixelPalette);
+                const style        = VMUViewerController.prototype.rgbaToStyleStr(colors);
                 ctx.fillStyle      = style;
                 ctx.fillRect(column, row, 1, 1);
             }
@@ -434,20 +442,20 @@ function drawIconToContext(ctx, bitmap, palette, columnOffset = 0, rowOffset = 0
             drawPixel(columnOffset + column, rowOffset + row, leftPixelMap);
             drawPixel(columnOffset + column + 1, rowOffset + row, rightPixelMap);
         });
-        imageCache[cacheKey] = ctx.getImageData(columnOffset, rowOffset, 32, 32);
+        VMUViewerController.prototype.imageCache[cacheKey] = ctx.getImageData(columnOffset, rowOffset, 32, 32);
     }
     else {
-        ctx.putImageData(imageCache[cacheKey], columnOffset, rowOffset);
+        ctx.putImageData(VMUViewerController.prototype.imageCache[cacheKey], columnOffset, rowOffset);
     }
 }
 
-function pad(obj, size, ch = "0") {
+VMUViewerController.prototype.pad = function(obj, size, ch = "0") {
     var objStr = obj.toString();
     if (size <= objStr.length) return objStr;
     return ch.repeat(size - objStr.length) + objStr;
 }
 
-function logNode(node, depth = 0) {
+VMUViewerController.prototype.logNode = function(node, depth = 0) {
     let string = "[" + depth + "] ";
     for (let currentDepth = 0; currentDepth < depth; ++currentDepth) {
         string += "    ";
@@ -457,14 +465,14 @@ function logNode(node, depth = 0) {
     if (node.childNodes.length > 0) string += " - " + node.childNodes.length + " children";
     if (node.classList && node.classList.length > 0) string += " - Clases = " + node.classList;
     console.log(string);
-    node.childNodes.forEach(child => logNode(child, depth + 1));
+    node.childNodes.forEach(child => VMUViewerController.prototype.logNode(child, depth + 1));
 }
 
-function getNodePath(node) {
+VMUViewerController.prototype.getNodePath = function(node) {
     if (!node) return null;
     let string = node.nodeName;
     if (node.id) string += "@" + node.id;
-    const parent = getNodePath(node.parentNode);
+    const parent = VMUViewerController.prototype.getNodePath(node.parentNode);
     if (parent) string = parent + " > " + string;
     return string;
 }
