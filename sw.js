@@ -27,7 +27,6 @@ self.addEventListener("install", function(event) {
                 currentFolder + "/js/psxmcviewer.js",
                 currentFolder + "/js/jistounicode.js",
                 currentFolder + "/images/psxmc_icon-192x192.png",
-
                 currentFolder + "/mcviewer.html",
                 currentFolder + "/js/mcviewer.js",
                 "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css",

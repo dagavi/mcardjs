@@ -4,15 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     new WebController(document.querySelector("main"));
 });
 
-function showError(msg) {
-    console.error(msg);
-
-    M.toast({
-        html: msg,
-        classes: 'rounded red'
-    })
-}
-
 function WebController(container) {
     const controller = this;
     this.container = container;
@@ -95,6 +86,7 @@ WebController.prototype.createTab = function(type = null) {
     let mcViewerController = null;
     if (type == "vmu") mcViewerController = new VMUViewerController(newDiv.querySelector(".mcviewer"), newID + ".bin");
     else if (type == "psxmc") mcViewerController = new PSXMCViewerController(newDiv.querySelector(".mcviewer"), newID + ".srm");
+    else throw new Error("Unrecognized type for tab: " + type);
 
     const controller = this;
     newANode.addEventListener("dragenter", function (event) {
@@ -305,7 +297,7 @@ class MCViewerController {
         const cacheKey = bitmap;
         if (!(cacheKey in WebController.prototype.imageCache)) {
             bitmap.forEach(function(data, index) {
-                // 32x32 as nibbles (every byte = 2 pixels)
+                // Bitmap as nibbles (every byte = 2 pixels)
                 const row = Math.floor(index/(controller.getBlockSize()/2));
                 const column = (index%(controller.getBlockSize()/2))*2;
 
@@ -467,7 +459,7 @@ class VMUViewerController extends MCViewerController {
         if (contentHeader.frameIntervalInMs() > 0) {
             const timer = setInterval(function drawInterval() {
                 contentHeader.currentFrame = (contentHeader.currentFrame + 1)%contentHeader.numIcons[0];
-                this.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
+                controller.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
             }, contentHeader.frameIntervalInMs());
             this.timers.push(timer);
         }
@@ -618,6 +610,15 @@ class PSXMCViewerController extends MCViewerController {
             this.drawMemoryCardBlockIcon(drawDirectory.getFrameNumber(), fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
         }
     }
+}
+
+function showError(msg) {
+    console.error(msg);
+
+    M.toast({
+        html: msg,
+        classes: 'rounded red'
+    })
 }
 
 function pad(obj, size, ch = "0") {
