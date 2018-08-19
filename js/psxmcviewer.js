@@ -1,8 +1,46 @@
 'use strict';
 
+document.addEventListener('DOMContentLoaded', function() {
+    new WebController(document.querySelector("main"));
+});
 
 function showError(msg) {
     console.error(msg);
+}
+
+function WebController(container) {
+    const button = container.querySelector("#addViewer");
+    button.addEventListener("click", function(event) {
+        new PSXMCViewerController(container);
+    });
+    new PSXMCViewerController(container);
+
+    document.addEventListener("dragover", function(event) {
+        // console.log("[WebController] dragover " + event.dataTransfer.types);
+        if (event.dataTransfer.types.includes("Files")) {
+            event.dataTransfer.dropEffect = "copy";
+            event.preventDefault();
+        }
+    });
+
+    document.addEventListener("drop", function(event) {
+        console.log("[WebController] Drop " + event.dataTransfer.types);
+
+        event.preventDefault();
+
+        let shouldSkipFirst = event.defaultPrevented;
+        for (const element of event.dataTransfer.items) {
+            if (element.kind === "file") {
+                //if (shouldSkipFirst) shouldSkipFirst = false;
+                //else {
+                    var file = element.getAsFile();
+                    console.log("[File] " + file.name);
+                    const controller = new PSXMCViewerController(container);
+                    controller.readFile(file);
+              //  }
+            }
+        }
+    });
 }
 
 /* Source: https://stackoverflow.com/questions/23451726/saving-binary-data-as-file-using-javascript-from-a-browser
@@ -16,7 +54,7 @@ function showError(msg) {
  * 2. If you want to support only modern browsers like Chrome, Edge, Firefox, etc.,
  *    then a simple implementation of saveAs function can be:
  */
-PSXMCViewerController.prototype.saveAs = function(blob, fileName) {
+function saveAs(blob, fileName) {
     var url = window.URL.createObjectURL(blob);
 
     var anchorElem = document.createElement("a");
@@ -40,11 +78,11 @@ PSXMCViewerController.prototype.DEFAULT_DOWNLOAD_FILENAME = "memorycard.srm";
 PSXMCViewerController.prototype.DRAG_AND_DROP_TYPE = "mcard/psxmc";
 
 function PSXMCViewerController(container) {
-    console.log("Loading PSXMC Viewer Controller: " + PSXMCViewerController.prototype.getNodePath(container));
+    console.log("Loading PSXMC Viewer Controller: " + getNodePath(container));
     const controller = this;
 
     // Clone template and add it to container
-    const viewerTemplate = document.querySelector("#psxmcviewer-tmpl");
+    const viewerTemplate = container.querySelector("#psxmcviewer");
     const viewer = document.importNode(viewerTemplate.content, true);
     container.appendChild(viewer);
 
@@ -102,7 +140,7 @@ function PSXMCViewerController(container) {
 
     const download = this.container.querySelector(".download");
     download.addEventListener("click", function(event){
-        PSXMCViewerController.prototype.saveAs(new Blob([controller.mcard.arrayBuffer], {type: 'application/octet-stream'}), controller.fileName);
+        saveAs(new Blob([controller.mcard.arrayBuffer], {type: 'application/octet-stream'}), controller.fileName);
     });
 
     window.onerror = function(message, file, line, col, error) {
@@ -209,12 +247,12 @@ PSXMCViewerController.prototype.displayDirectoryEntry = function(directory, tabl
 
     fileHeader.currentFrame = 0;
 
-    PSXMCViewerController.prototype.drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
+    drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
 
     if (fileHeader.frameIntervalInMs() > 0) {
         const timer = setInterval(function drawInterval() {
             fileHeader.currentFrame = (fileHeader.currentFrame + 1)%fileHeader.numIcons[0];
-            PSXMCViewerController.prototype.drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
+            drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
         }, fileHeader.frameIntervalInMs());
         this.timers.push(timer);
     }
@@ -278,7 +316,7 @@ PSXMCViewerController.prototype.drawMemoryCardBlock = function(context, blockIdx
     }
 
     if (bitmap) {
-        PSXMCViewerController.prototype.drawIconToContext(context, bitmap, palette, columnPixel + PSXMC_CANVAS_BLOCK_MARGIN + PSXMC_CANVAS_BLOCK_BORDER, rowPixel + PSXMC_CANVAS_BLOCK_MARGIN + PSXMC_CANVAS_BLOCK_BORDER);
+        drawIconToContext(context, bitmap, palette, columnPixel + PSXMC_CANVAS_BLOCK_MARGIN + PSXMC_CANVAS_BLOCK_BORDER, rowPixel + PSXMC_CANVAS_BLOCK_MARGIN + PSXMC_CANVAS_BLOCK_BORDER);
     }
     else {
         context.fillStyle = 'white';
@@ -299,7 +337,7 @@ Color bits: Alpha + 3 groups x 5 bits
     | 15  | 14  13  12  11  10 |  9   8  7   6   5 |  4  3   2   1   0 |
     |  A  |        Blue        |       Green       |        Red        |
 */
-PSXMCViewerController.prototype.paletteToRGBA = function(palette) {
+function paletteToRGBA(palette) {
     return {
         a :        1 /*1 - ((palette >> 5*3) & 0x01)*0.25*/, // Disabled transparency
         r : Math.floor(((palette >> 5*0) & 0x1F)/0x1F*255),
@@ -308,20 +346,20 @@ PSXMCViewerController.prototype.paletteToRGBA = function(palette) {
     };
 }
 
-PSXMCViewerController.prototype.rgbaToStyleStr = function(rgba) {
+function rgbaToStyleStr(rgba) {
     return "rgba(" + rgba.r + ", " + rgba.g + ", " + rgba.b + ", " + rgba.a + ")";
 }
 
-PSXMCViewerController.prototype.drawIcon = function(canvas, bitmap, palette) {
+function drawIcon(canvas, bitmap, palette) {
     var ctx = canvas.getContext("2d");
-    PSXMCViewerController.prototype.drawIconToContext(ctx, bitmap, palette, 0, 0);
+    drawIconToContext(ctx, bitmap, palette, 0, 0);
 }
 
-PSXMCViewerController.prototype.imageCache = new Map();
+const imageCache = new Map();
 
-PSXMCViewerController.prototype.drawIconToContext = function(ctx, bitmap, palette, columnOffset = 0, rowOffset = 0) {
+function drawIconToContext(ctx, bitmap, palette, columnOffset = 0, rowOffset = 0) {
     const cacheKey = bitmap;
-    if (!(cacheKey in PSXMCViewerController.prototype.imageCache)) {
+    if (!(cacheKey in imageCache)) {
         bitmap.forEach(function(data, index) {
             // 16x16 as nibbles (every byte = 2 pixels)
             const row = Math.floor(index/(16/2));
@@ -329,8 +367,8 @@ PSXMCViewerController.prototype.drawIconToContext = function(ctx, bitmap, palett
 
             function drawPixel(column, row, pixelMap) {
                 const pixelPalette = palette[pixelMap];
-                const colors       = PSXMCViewerController.prototype.paletteToRGBA(pixelPalette);
-                const style        = PSXMCViewerController.prototype.rgbaToStyleStr(colors);
+                const colors       = paletteToRGBA(pixelPalette);
+                const style        = rgbaToStyleStr(colors);
                 ctx.fillStyle      = style;
                 ctx.fillRect(column, row, 1, 1);
             }
@@ -341,18 +379,37 @@ PSXMCViewerController.prototype.drawIconToContext = function(ctx, bitmap, palett
             drawPixel(columnOffset + column, rowOffset + row, leftPixelMap);
             drawPixel(columnOffset + column + 1, rowOffset + row, rightPixelMap);
         });
-        PSXMCViewerController.prototype.imageCache[cacheKey] = ctx.getImageData(columnOffset, rowOffset, 16, 16);
+        imageCache[cacheKey] = ctx.getImageData(columnOffset, rowOffset, 16, 16);
     }
     else {
-        ctx.putImageData(PSXMCViewerController.prototype.imageCache[cacheKey], columnOffset, rowOffset);
+        ctx.putImageData(imageCache[cacheKey], columnOffset, rowOffset);
     }
 }
 
-PSXMCViewerController.prototype.getNodePath = function(node) {
+function pad(obj, size, ch = "0") {
+    var objStr = obj.toString();
+    if (size <= objStr.length) return objStr;
+    return ch.repeat(size - objStr.length) + objStr;
+}
+
+function logNode(node, depth = 0) {
+    let string = "[" + depth + "] ";
+    for (let currentDepth = 0; currentDepth < depth; ++currentDepth) {
+        string += "    ";
+    }
+    string += node.nodeName;
+    if (node.id) string += "@" + node.id;
+    if (node.childNodes.length > 0) string += " - " + node.childNodes.length + " children";
+    if (node.classList && node.classList.length > 0) string += " - Clases = " + node.classList;
+    console.log(string);
+    node.childNodes.forEach(child => logNode(child, depth + 1));
+}
+
+function getNodePath(node) {
     if (!node) return null;
     let string = node.nodeName;
     if (node.id) string += "@" + node.id;
-    const parent = PSXMCViewerController.prototype.getNodePath(node.parentNode);
+    const parent = getNodePath(node.parentNode);
     if (parent) string = parent + " > " + string;
     return string;
 }

@@ -13,9 +13,6 @@ function showError(msg) {
     })
 }
 
-const imageCache = new Map();
-
-
 function WebController(container) {
     const controller = this;
     this.container = container;
@@ -113,6 +110,7 @@ WebController.prototype.createTab = function(type = null) {
     this.tabController.select(newID);
 }
 
+WebController.prototype.imageCache = new Map();
 WebController.prototype.transferObject = [];
 
 class MCViewerController {
@@ -184,8 +182,6 @@ class MCViewerController {
 
         this.drawMemoryCard();
     }
-
-
 
     /* Source: https://stackoverflow.com/questions/23451726/saving-binary-data-as-file-using-javascript-from-a-browser
      * Two options
@@ -306,7 +302,7 @@ class MCViewerController {
     drawIconToContext(ctx, bitmap, palette, columnOffset = 0, rowOffset = 0) {
         const controller = this;
         const cacheKey = bitmap;
-        if (!(cacheKey in imageCache)) {
+        if (!(cacheKey in WebController.prototype.imageCache)) {
             bitmap.forEach(function(data, index) {
                 // 32x32 as nibbles (every byte = 2 pixels)
                 const row = Math.floor(index/(32/2));
@@ -326,10 +322,10 @@ class MCViewerController {
                 drawPixel(columnOffset + column, rowOffset + row, leftPixelMap);
                 drawPixel(columnOffset + column + 1, rowOffset + row, rightPixelMap);
             });
-            imageCache[cacheKey] = ctx.getImageData(columnOffset, rowOffset, 32, 32);
+            WebController.prototype.imageCache[cacheKey] = ctx.getImageData(columnOffset, rowOffset, 32, 32);
         }
         else {
-            ctx.putImageData(imageCache[cacheKey], columnOffset, rowOffset);
+            ctx.putImageData(WebController.prototype.imageCache[cacheKey], columnOffset, rowOffset);
         }
     }
 
@@ -451,8 +447,8 @@ class VMUViewerController extends MCViewerController {
 
         newCell = row.insertCell();
         let canvas = document.createElement('canvas');
-        canvas.width = 32;
-        canvas.height = 32;
+        canvas.width = this.getBlockSize();
+        canvas.height = this.getBlockSize();
         canvas.style.border = "1px solid";
 
         contentHeader.currentFrame = 0;
@@ -572,8 +568,8 @@ class PSXMCViewerController extends MCViewerController {
 
         newCell = row.insertCell();
         let canvas = document.createElement('canvas');
-        canvas.width = 16;
-        canvas.height = 16;
+        canvas.width = this.getBlockSize();
+        canvas.height = this.getBlockSize();
         canvas.style.border = "1px solid";
 
         fileHeader.currentFrame = 0;
