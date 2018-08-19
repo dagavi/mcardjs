@@ -300,7 +300,7 @@ VMUContent.prototype.getcreatorID = function() {
     | 7 6 5 4 | 3 2 1 0 |
     |  Left   |  Right  |
 */
-VMUContent.prototype.getIconBitmap = function(bitmapIdx) {
+VMUContent.prototype.getIconBitmap = function(bitmapIdx = 0) {
     if (bitmapIdx >= this.numIcons[0]) {
         console.error("Asking for bitmap " + bitmapIdx + " when number of bitmaps = " + this.numIcons[0]);
         return null;

@@ -282,6 +282,11 @@ PSXMCDirectory.prototype.getFileHeader = function() {
     return new TitleFrame(this, this.mcard.getFrame(this.getFrameNumber(), 0));
 }
 
+// Compatibility function with VMU
+PSXMCDirectory.prototype.getContent = function() {
+    return this.getFileHeader();
+}
+
 /*
 Title Frame (Block 1..15, Frame 0) (in first block of file only)
   00h-01h  ID (ASCII "SC")
@@ -322,7 +327,7 @@ Icon Frame(s) (Block 1..15, Frame 1..3) (in first block of file only)
     | 7 6 5 4 | 3 2 1 0 |
     |  Right  |  Left   |
 */
-TitleFrame.prototype.getIconBitmap = function(idx) {
+TitleFrame.prototype.getIconBitmap = function(idx = 0) {
     if (idx >= this.numIcons[0]) {
         throw new Error("Ask for icon " + idx + " when this file only has " + this.numIcons[0] + " icons (and they are 0 indexed)");
     }

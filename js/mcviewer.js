@@ -359,6 +359,62 @@ class MCViewerController {
             controller.displayDirectoryEntry(directoryEntry, controller.table);
         });
     }
+
+    displayDirectoryEntry(directory, table) {
+        const controller = this;
+
+        // hexdump(new Uint8Array(arrayBuffer), directory.firstBlock[0]);
+        const row = table.insertRow();
+        row.draggable = true;
+        row.addEventListener("dragstart", function(event) {
+            console.log("[Drag start]");
+            WebController.prototype.transferObject = [directory];
+            event.dataTransfer.setData(controller.getDragAndDropType(), null);
+        });
+
+        row.addEventListener("dragend", function(event) {
+            console.log("[Drag end] Event dropEffect: " + event.dataTransfer.dropEffect);
+            WebController.prototype.transferObject = [];
+        });
+
+        row.addEventListener("click", function(event) {
+            console.log("[Row click]");
+            event.currentTarget.classList.toggle("selected-row");
+        });
+
+        this.fillDirectory(row, directory);
+
+        let newCell = row.insertCell();
+        let canvas = document.createElement('canvas');
+        canvas.width = this.getBlockSize();
+        canvas.height = this.getBlockSize();
+        canvas.style.border = "1px solid";
+
+        const contentHeader = directory.getContent();
+        contentHeader.currentFrame = 0;
+        this.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
+
+        if (contentHeader.frameIntervalInMs() > 0) {
+            const timer = setInterval(function drawInterval() {
+                contentHeader.currentFrame = (contentHeader.currentFrame + 1)%contentHeader.numIcons[0];
+                controller.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
+            }, contentHeader.frameIntervalInMs());
+            this.timers.push(timer);
+        }
+
+        newCell.appendChild(canvas);
+
+        newCell = row.insertCell();
+        const cellText = document.createTextNode("✖");
+        newCell.addEventListener("click", function(event) {
+            console.log("Delete");
+            directory.mcard.deleteDirectoryEntry(directory);
+            controller.resetState();
+            controller.displayData();
+
+        });
+        newCell.appendChild(cellText);
+    }
 }
 
 const VMU_CANVAS_BLOCKS_PER_COLUMN = 16;
@@ -402,7 +458,7 @@ class VMUViewerController extends MCViewerController {
         };
     }
 
-    displayDirectoryEntry(directory, table) {
+    displayDirectoryEntry2(directory, table) {
         console.log("[" + pad(directory.type[0].toString(16), 2) + "] Filename: " + directory.getFileName() + " [" + directory.size[0] + " blocks][First " + directory.firstBlock[0] + "+" + directory.headerOffset[0] + "]");
         const controller = this;
 
@@ -425,6 +481,9 @@ class VMUViewerController extends MCViewerController {
             event.currentTarget.classList.toggle("selected-row");
         });
 
+    }
+
+    fillDirectory(row, directory) {
         let newCell = row.insertCell();
         let cellText = document.createTextNode(directory.getFileName());
         newCell.appendChild(cellText);
@@ -447,45 +506,14 @@ class VMUViewerController extends MCViewerController {
         cellText = document.createTextNode(contentHeader.getBootDescription());
         newCell.appendChild(cellText);
 
-        newCell = row.insertCell();
-        let canvas = document.createElement('canvas');
-        canvas.width = this.getBlockSize();
-        canvas.height = this.getBlockSize();
-        canvas.style.border = "1px solid";
-
-        contentHeader.currentFrame = 0;
-        this.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
-
-        if (contentHeader.frameIntervalInMs() > 0) {
-            const timer = setInterval(function drawInterval() {
-                contentHeader.currentFrame = (contentHeader.currentFrame + 1)%contentHeader.numIcons[0];
-                controller.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
-            }, contentHeader.frameIntervalInMs());
-            this.timers.push(timer);
-        }
-
-        newCell.appendChild(canvas);
-
-        newCell = row.insertCell();
-        cellText = document.createTextNode("✖");
-        newCell.addEventListener("click", function(event) {
-            console.log("Delete");
-            directory.mcard.deleteDirectoryEntry(directory);
-            controller.resetState();
-            controller.displayData();
-
-        });
-        newCell.appendChild(cellText);
-
-
         /* Fill memory card */
         let dataBlockIterator = directory.firstBlock[0];
         for (let idx = 0; idx < directory.size[0]; ++idx) {
-            this.drawMemoryCardBlockIcon(dataBlockIterator, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
+            this.drawMemoryCardBlockIcon(dataBlockIterator, contentHeader.getIconBitmap(), contentHeader.iconPalette);
             dataBlockIterator = this.mcard.getNextFATBlock(dataBlockIterator);
         }
-    }
 
+    }
 }
 
 const PSXMC_CANVAS_BLOCKS_PER_COLUMN = 16;
@@ -534,24 +562,7 @@ class PSXMCViewerController extends MCViewerController {
         };
     }
 
-    displayDirectoryEntry(directory, table) {
-        console.log("Filename: " + directory.getFileName());
-        const controller = this;
-
-        // hexdump(new Uint8Array(arrayBuffer), directory.firstBlock[0]);
-        const row = table.insertRow();
-        row.draggable = true;
-        row.addEventListener("dragstart", function(event) {
-            console.log("[Drag start]");
-            WebController.prototype.transferObject = [directory];
-            event.dataTransfer.setData(controller.getDragAndDropType(), null);
-        });
-
-        row.addEventListener("dragend", function(event) {
-            console.log("[Drag end] Event dropEffect: " + event.dataTransfer.dropEffect);
-            WebController.prototype.transferObject = [];
-        });
-
+    fillDirectory(row, directory) {
         let fileHeader = directory.getFileHeader();
 
         let newCell = row.insertCell();
@@ -574,40 +585,9 @@ class PSXMCViewerController extends MCViewerController {
         cellText = document.createTextNode(directory.size[0]);
         newCell.appendChild(cellText);
 
-        newCell = row.insertCell();
-        let canvas = document.createElement('canvas');
-        canvas.width = this.getBlockSize();
-        canvas.height = this.getBlockSize();
-        canvas.style.border = "1px solid";
-
-        fileHeader.currentFrame = 0;
-
-        this.drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
-
-        if (fileHeader.frameIntervalInMs() > 0) {
-            const timer = setInterval(function drawInterval() {
-                fileHeader.currentFrame = (fileHeader.currentFrame + 1)%fileHeader.numIcons[0];
-                controller.drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
-            }, fileHeader.frameIntervalInMs());
-            this.timers.push(timer);
-        }
-
-        newCell.appendChild(canvas);
-
-        newCell = row.insertCell();
-        cellText = document.createTextNode("✖");
-        newCell.addEventListener("click", function(event) {
-            console.log("Delete");
-            directory.mcard.deleteDirectoryEntry(directory);
-            controller.resetState();
-            controller.displayData();
-
-        });
-        newCell.appendChild(cellText);
-
         /* Fill memory card */
         for (let drawDirectory = directory; drawDirectory != null; drawDirectory = drawDirectory.getNextDirectory()) {
-            this.drawMemoryCardBlockIcon(drawDirectory.getFrameNumber(), fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
+            this.drawMemoryCardBlockIcon(drawDirectory.getFrameNumber(), fileHeader.getIconBitmap(), fileHeader.iconPalette);
         }
     }
 }
