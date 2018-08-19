@@ -169,7 +169,7 @@ class MCViewerController {
         });
 
         window.onerror = function(message, file, line, col, error) {
-            showError(message);
+            MCViewerController.showError(message);
         }
 
         this.drawMemoryCard();
@@ -214,6 +214,35 @@ class MCViewerController {
         if (parent) string = parent + " > " + string;
         return string;
     }
+
+    static showError(msg) {
+        console.error(msg);
+
+        M.toast({
+            html: msg,
+            classes: 'rounded red'
+        })
+    }
+
+    static pad(obj, size, ch = "0") {
+        var objStr = obj.toString();
+        if (size <= objStr.length) return objStr;
+        return ch.repeat(size - objStr.length) + objStr;
+    }
+
+    static logNode(node, depth = 0) {
+        let string = "[" + depth + "] ";
+        for (let currentDepth = 0; currentDepth < depth; ++currentDepth) {
+            string += "    ";
+        }
+        string += node.nodeName;
+        if (node.id) string += "@" + node.id;
+        if (node.childNodes.length > 0) string += " - " + node.childNodes.length + " children";
+        if (node.classList && node.classList.length > 0) string += " - Clases = " + node.classList;
+        console.log(string);
+        node.childNodes.forEach(child => MCViewerController.logNode(child, depth + 1));
+    }
+
 
     getDragAndDropType() {
         return "mcard/" + this.getName();
@@ -456,31 +485,6 @@ class VMUViewerController extends MCViewerController {
         };
     }
 
-    displayDirectoryEntry2(directory, table) {
-        console.log("[" + pad(directory.type[0].toString(16), 2) + "] Filename: " + directory.getFileName() + " [" + directory.size[0] + " blocks][First " + directory.firstBlock[0] + "+" + directory.headerOffset[0] + "]");
-        const controller = this;
-
-        // hexdump(new Uint8Array(arrayBuffer), directory.firstBlock[0]);
-        const row = table.insertRow();
-        row.draggable = true;
-        row.addEventListener("dragstart", function(event) {
-            console.log("[Drag start]");
-            WebController.prototype.transferObject = [directory];
-            event.dataTransfer.setData(controller.getDragAndDropType(), null);
-        });
-
-        row.addEventListener("dragend", function(event) {
-            console.log("[Drag end] Event dropEffect: " + event.dataTransfer.dropEffect);
-            WebController.prototype.transferObject = [];
-        });
-
-        row.addEventListener("click", function(event) {
-            console.log("[Row click]");
-            event.currentTarget.classList.toggle("selected-row");
-        });
-
-    }
-
     fillDirectory(row, directory) {
         let newCell = row.insertCell();
         let cellText = document.createTextNode(directory.getFileName());
@@ -539,7 +543,6 @@ class PSXMCViewerController extends MCViewerController {
     getBlockSize()        { return PSXMC_CANVAS_BLOCK_SIZE; }
     reverseBitmapNibble() { return true; }
 
-
     /*
       0-4   Red       (0..31)         ;\Color 0000h        = Fully-Transparent
       5-9   Green     (0..31)         ; Color 0001h..7FFFh = Non-Transparent
@@ -587,32 +590,4 @@ class PSXMCViewerController extends MCViewerController {
             this.drawMemoryCardBlockIcon(drawDirectory.getFrameNumber(), fileHeader.getIconBitmap(), fileHeader.iconPalette);
         }
     }
-}
-
-function showError(msg) {
-    console.error(msg);
-
-    M.toast({
-        html: msg,
-        classes: 'rounded red'
-    })
-}
-
-function pad(obj, size, ch = "0") {
-    var objStr = obj.toString();
-    if (size <= objStr.length) return objStr;
-    return ch.repeat(size - objStr.length) + objStr;
-}
-
-function logNode(node, depth = 0) {
-    let string = "[" + depth + "] ";
-    for (let currentDepth = 0; currentDepth < depth; ++currentDepth) {
-        string += "    ";
-    }
-    string += node.nodeName;
-    if (node.id) string += "@" + node.id;
-    if (node.childNodes.length > 0) string += " - " + node.childNodes.length + " children";
-    if (node.classList && node.classList.length > 0) string += " - Clases = " + node.classList;
-    console.log(string);
-    node.childNodes.forEach(child => logNode(child, depth + 1));
 }
