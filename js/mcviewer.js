@@ -128,10 +128,11 @@ class MCViewerController {
         this.timers = [];
         this.table = this.container.querySelector(".elements");
         this.mcard = this.createMCObject();
-        this.fileName = fileName;
+        if (fileName != null) this.fileName = fileName;
+        else this.fileName = "mc" + this.getExtension();
 
         this.container.addEventListener("dragover", function (event) {
-            // console.log("[VMUViewerController] dragover " + event.dataTransfer.types);
+            // console.log("[MCViewerController] dragover " + event.dataTransfer.types);
 
             if ((event.dataTransfer.types.includes(controller.getDragAndDropType()) && WebController.prototype.transferObject.some(dir => dir.mcard != controller.mcard))
                  || event.dataTransfer.types.includes("Files")) {
@@ -241,7 +242,7 @@ class MCViewerController {
             this.table.deleteRow(-1);
         }
 
-        // Draw the VMU schema
+        // Draw the MC schema
         this.drawMemoryCard();
     }
 
@@ -305,8 +306,8 @@ class MCViewerController {
         if (!(cacheKey in WebController.prototype.imageCache)) {
             bitmap.forEach(function(data, index) {
                 // 32x32 as nibbles (every byte = 2 pixels)
-                const row = Math.floor(index/(32/2));
-                const column = (index%(32/2))*2;
+                const row = Math.floor(index/(controller.getBlockSize()/2));
+                const column = (index%(controller.getBlockSize()/2))*2;
 
                 function drawPixel(column, row, pixelMap) {
                     const pixelPalette = palette[pixelMap];
@@ -316,18 +317,26 @@ class MCViewerController {
                     ctx.fillRect(column, row, 1, 1);
                 }
 
-                const leftPixelMap  = (data >> 4) & 0xF;
-                const rightPixelMap = data & 0xF;
+                let leftPixelMap  = (data >> 4) & 0xF;
+                let rightPixelMap = data & 0xF;
+
+                if (controller.reverseBitmapNibble()) {
+                    const backupPixelMap = leftPixelMap;
+                    leftPixelMap = rightPixelMap;
+                    rightPixelMap = backupPixelMap;
+                }
 
                 drawPixel(columnOffset + column, rowOffset + row, leftPixelMap);
                 drawPixel(columnOffset + column + 1, rowOffset + row, rightPixelMap);
             });
-            WebController.prototype.imageCache[cacheKey] = ctx.getImageData(columnOffset, rowOffset, 32, 32);
+            WebController.prototype.imageCache[cacheKey] = ctx.getImageData(columnOffset, rowOffset, this.getBlockSize(), this.getBlockSize());
         }
         else {
             ctx.putImageData(WebController.prototype.imageCache[cacheKey], columnOffset, rowOffset);
         }
     }
+
+    reverseBitmapNibble() { return false; }
 
     static rgbaToStyleStr(rgba) {
         return "rgba(" + rgba.r + ", " + rgba.g + ", " + rgba.b + ", " + rgba.a + ")";
@@ -360,9 +369,6 @@ class MCViewerController {
     }
 }
 
-
-// VMUViewerController.prototype.DEFAULT_DOWNLOAD_FILENAME = "vmu.bin";
-
 const VMU_CANVAS_BLOCKS_PER_COLUMN = 16;
 const VMU_CANVAS_BLOCK_SIZE = 32;
 const VMU_CANVAS_BLOCK_MARGIN = 1;
@@ -379,6 +385,10 @@ class VMUViewerController extends MCViewerController {
 
     getName() {
         return "vmu";
+    }
+
+    getExtension() {
+        return "bin";
     }
 
     getTotalBlocks()     { return VMU.prototype.TOTAL_BLOCKS; }
@@ -452,12 +462,12 @@ class VMUViewerController extends MCViewerController {
         canvas.style.border = "1px solid";
 
         contentHeader.currentFrame = 0;
-        VMUViewerController.prototype.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
+        this.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
 
         if (contentHeader.frameIntervalInMs() > 0) {
             const timer = setInterval(function drawInterval() {
                 contentHeader.currentFrame = (contentHeader.currentFrame + 1)%contentHeader.numIcons[0];
-                VMUViewerController.prototype.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
+                this.drawIcon(canvas, contentHeader.getIconBitmap(contentHeader.currentFrame), contentHeader.iconPalette);
             }, contentHeader.frameIntervalInMs());
             this.timers.push(timer);
         }
@@ -502,10 +512,16 @@ class PSXMCViewerController extends MCViewerController {
         return "psxmc";
     }
 
+    getExtension() {
+        return "srm";
+    }
+
     getTotalBlocks()     { return PSXMC.prototype.TOTAL_BLOCKS;}
 
     getBlocksPerColumn() { return PSXMC_CANVAS_BLOCKS_PER_COLUMN; }
     getBlockSize()       { return PSXMC_CANVAS_BLOCK_SIZE; }
+    reverseBitmapNibble() { return true; }
+
 
     /*
       0-4   Red       (0..31)         ;\Color 0000h        = Fully-Transparent
@@ -535,13 +551,13 @@ class PSXMCViewerController extends MCViewerController {
         row.draggable = true;
         row.addEventListener("dragstart", function(event) {
             console.log("[Drag start]");
-            PSXMCViewerController.prototype.transferObject = directory;
+            WebController.prototype.transferObject = [directory];
             event.dataTransfer.setData(controller.getDragAndDropType(), null);
         });
 
         row.addEventListener("dragend", function(event) {
             console.log("[Drag end] Event dropEffect: " + event.dataTransfer.dropEffect);
-            PSXMCViewerController.prototype.transferObject = null;
+            WebController.prototype.transferObject = [];
         });
 
         let fileHeader = directory.getFileHeader();
@@ -574,12 +590,12 @@ class PSXMCViewerController extends MCViewerController {
 
         fileHeader.currentFrame = 0;
 
-        PSXMCViewerController.prototype.drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
+        this.drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
 
         if (fileHeader.frameIntervalInMs() > 0) {
             const timer = setInterval(function drawInterval() {
                 fileHeader.currentFrame = (fileHeader.currentFrame + 1)%fileHeader.numIcons[0];
-                PSXMCViewerController.prototype.drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
+                controller.drawIcon(canvas, fileHeader.getIconBitmap(fileHeader.currentFrame), fileHeader.iconPalette);
             }, fileHeader.frameIntervalInMs());
             this.timers.push(timer);
         }
@@ -620,5 +636,5 @@ function logNode(node, depth = 0) {
     if (node.childNodes.length > 0) string += " - " + node.childNodes.length + " children";
     if (node.classList && node.classList.length > 0) string += " - Clases = " + node.classList;
     console.log(string);
-    node.childNodes.forEach(child => VMUViewerController.prototype.logNode(child, depth + 1));
+    node.childNodes.forEach(child => logNode(child, depth + 1));
 }
