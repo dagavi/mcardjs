@@ -67,7 +67,6 @@ WebController.prototype.createTab = function(type = null) {
     const newID = "mcard" + this.tabCounter;
     ++this.tabCounter;
 
-
     // Header
     const tabHdrTmpl = tabsContainer.querySelector("#tab-hdr-tmpl");
     const newHdrNode = document.importNode(tabHdrTmpl.content, true);
@@ -440,7 +439,6 @@ class VMUViewerController extends MCViewerController {
     }
 
     getTotalBlocks()     { return VMU.prototype.TOTAL_BLOCKS; }
-
     getBlocksPerColumn() { return VMU_CANVAS_BLOCKS_PER_COLUMN; }
     getBlockSize()       { return VMU_CANVAS_BLOCK_SIZE; }
 
@@ -536,10 +534,9 @@ class PSXMCViewerController extends MCViewerController {
         return "srm";
     }
 
-    getTotalBlocks()     { return PSXMC.prototype.TOTAL_BLOCKS;}
-
-    getBlocksPerColumn() { return PSXMC_CANVAS_BLOCKS_PER_COLUMN; }
-    getBlockSize()       { return PSXMC_CANVAS_BLOCK_SIZE; }
+    getTotalBlocks()      { return PSXMC.prototype.TOTAL_BLOCKS; }
+    getBlocksPerColumn()  { return PSXMC_CANVAS_BLOCKS_PER_COLUMN; }
+    getBlockSize()        { return PSXMC_CANVAS_BLOCK_SIZE; }
     reverseBitmapNibble() { return true; }
 
 
