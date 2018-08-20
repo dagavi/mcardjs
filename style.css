@@ -26,7 +26,6 @@
     text-transform: uppercase;
 }
 
-
 .elements tr:hover:not(:first-child) {
     background-color: #EAEAFF;
 }

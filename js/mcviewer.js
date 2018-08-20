@@ -20,8 +20,6 @@ function WebController(container) {
     document.addEventListener("drop", function(event) {
         console.log("[WebController] Drop " + event.dataTransfer.types);
 
-        event.preventDefault();
-
         let shouldSkipFirst = event.defaultPrevented;
         for (const element of event.dataTransfer.items) {
             if (element.kind === "file") {
@@ -29,9 +27,12 @@ function WebController(container) {
                 else {
                     var file = element.getAsFile();
                     console.log("[File] " + file.name);
-                    const controller = new VMUViewerController(container);
-                    controller.readFile(file);
+                    let type = VMUViewerController.getName();
+                    if (file.name.endsWith(PSXMCViewerController.getExtension())) type = PSXMCViewerController.getName();
+                    const mccontroller = controller.createTab(type);
+                    mccontroller.readFile(file);
                 }
+                event.preventDefault();
             }
         }
     });
@@ -44,19 +45,20 @@ function WebController(container) {
     const dcButton = document.getElementById("newvmu");
     dcButton.addEventListener("click", function() {
         console.log("New VMU card");
-        controller.createTab("vmu");
+        controller.createTab(VMUViewerController.getName());
     });
 
     const psxButton = document.getElementById("newpsxmc");
     psxButton.addEventListener("click", function() {
         console.log("New PSX MC");
-        controller.createTab("psxmc");
+        controller.createTab(PSXMCViewerController.getName());
     });
 
-    // this.createTab("vmu");
+    // this.createTab(VMUViewerController.getName());
 }
 
 WebController.prototype.createTab = function(type = null) {
+    console.log("Create tab for = " + type);
     // Container for tabs
     const tabsContainer = this.container.querySelector("#tabs-container");
 
@@ -64,7 +66,7 @@ WebController.prototype.createTab = function(type = null) {
     const tabHdrContainer = tabsContainer.querySelector(".tabs");
 
     // Generate new ID
-    const newID = "mcard" + this.tabCounter;
+    const newID = type + this.tabCounter;
     ++this.tabCounter;
 
     // Header
@@ -83,8 +85,8 @@ WebController.prototype.createTab = function(type = null) {
     newDiv.id = newID;
 
     let mcViewerController = null;
-    if (type == "vmu") mcViewerController = new VMUViewerController(newDiv.querySelector(".mcviewer"), newID + ".bin");
-    else if (type == "psxmc") mcViewerController = new PSXMCViewerController(newDiv.querySelector(".mcviewer"), newID + ".srm");
+    if (type == VMUViewerController.getName()) mcViewerController = new VMUViewerController(newDiv.querySelector(".mcviewer"), newID + VMUViewerController.getExtension());
+    else if (type == PSXMCViewerController.getName()) mcViewerController = new PSXMCViewerController(newDiv.querySelector(".mcviewer"), newID + PSXMCViewerController.getExtension());
     else throw new Error("Unrecognized type for tab: " + type);
 
     const controller = this;
@@ -99,6 +101,8 @@ WebController.prototype.createTab = function(type = null) {
     if (this.tabController) this.tabController.destroy();
     this.tabController = M.Tabs.init(tabHdrContainer, {});
     this.tabController.select(newID);
+
+    return mcViewerController;
 }
 
 WebController.prototype.imageCache = new Map();
@@ -145,16 +149,16 @@ class MCViewerController {
                 controller.mcard.copyDirectoryEntry(directory);
                 controller.resetState();
                 controller.displayData();
-
+                event.preventDefault();
             }
-            else if (event.dataTransfer.items.length > 0) { // Files
+            /*else if (event.dataTransfer.items.length > 0) { // Files
                 const firstFile = event.dataTransfer.items[0].getAsFile();
                 console.log("[File] " + firstFile.name);
                 controller.readFile(firstFile);
 
                 if (event.dataTransfer.items.length == 1) event.stopPropagation();
-            }
-            event.preventDefault();
+                event.preventDefault();
+            }*/
         });
 
         const filesInput = this.container.querySelector(".file");
@@ -459,17 +463,14 @@ class VMUViewerController extends MCViewerController {
         return new VMU();
     }
 
-    getName() {
-        return "vmu";
-    }
+    static getName()      { return "vmu"; }
+    static getExtension() { return "bin"; }
+    getName()             { return VMUViewerController.getName(); }
+    getExtension()        { return VMUViewerController.getExtension(); }
 
-    getExtension() {
-        return "bin";
-    }
-
-    getTotalBlocks()     { return VMU.prototype.TOTAL_BLOCKS; }
-    getBlocksPerColumn() { return VMU_CANVAS_BLOCKS_PER_COLUMN; }
-    getBlockSize()       { return VMU_CANVAS_BLOCK_SIZE; }
+    getTotalBlocks()      { return VMU.prototype.TOTAL_BLOCKS; }
+    getBlocksPerColumn()  { return VMU_CANVAS_BLOCKS_PER_COLUMN; }
+    getBlockSize()        { return VMU_CANVAS_BLOCK_SIZE; }
 
     /*
     Color bits: 4 groups x 4 bits
@@ -530,13 +531,10 @@ class PSXMCViewerController extends MCViewerController {
         return new PSXMC();
     }
 
-    getName() {
-        return "psxmc";
-    }
-
-    getExtension() {
-        return "srm";
-    }
+    static getName()      { return "psxmc"; }
+    static getExtension() { return "srm"; }
+    getName()             { return PSXMCViewerController.getName(); }
+    getExtension()        { return PSXMCViewerController.getExtension(); }
 
     getTotalBlocks()      { return PSXMC.prototype.TOTAL_BLOCKS; }
     getBlocksPerColumn()  { return PSXMC_CANVAS_BLOCKS_PER_COLUMN; }
