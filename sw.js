@@ -18,6 +18,7 @@ self.addEventListener("install", function(event) {
                 currentFolder + "/",
                 currentFolder + "/index.html",
                 currentFolder + "/style.css",
+                currentFolder + "/js/sw-register.js",
                 currentFolder + "/vmuviewer.html",
                 currentFolder + "/js/vmu.js",
                 currentFolder + "/js/vmuviewer.js",

@@ -23,7 +23,7 @@
             "type": "image/png"
         }
     ],
-    "start_url": "index.html",
+    "start_url": "mcviewer.html",
     "display": "standalone",
     "background_color": "#447AC4",
     "theme_color": "#447AC4"
