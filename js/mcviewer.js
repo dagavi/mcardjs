@@ -53,7 +53,7 @@ function WebController(container) {
         controller.createTab("psxmc");
     });
 
-    this.createTab("vmu");
+    // this.createTab("vmu");
 }
 
 WebController.prototype.createTab = function(type = null) {

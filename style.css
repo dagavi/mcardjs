@@ -16,6 +16,10 @@
 
 /**** Other elements ****/
 
+.newtab-message:not(:last-child) {
+    display: none;
+}
+
 /* First table row */
 .elements tr:first-child th {
     /* background-color: #EAEAEA; */
